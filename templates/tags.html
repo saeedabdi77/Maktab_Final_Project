@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Tags{% endblock %}
+
+
+{% block content %}
+{% load static %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th scope="col"><small>number of posts contain this tag</small></th>
+                    <th scope="col">Tag name</th>
+                    <th scope="col">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for tag in tags %}
+
+
+                <tr>
+                    <td style="width: 10%">{{tag.posts}}</td>
+                    <td style="width: 75%">{{tag.name}}</td>
+                    <td>
+                        <a type="button" class="btn btn-primary" href="/blog/tags/{{tag.name}}"><i
+                                class="far fa-eye"></i></a>
+                        <a type="button" class="btn btn-success" href="/blog/tags/edit/{{tag.name}}"><i
+                                class="fas fa-edit"></i></a>
+                        <a type="button" class="btn btn-danger" href="/blog/tags/delete/{{tag.name}}"><i
+                                class="far fa-trash-alt"></i></a>
+                    </td>
+                </tr>
+
+
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<a type="button" class="btn btn-primary" href="{% url 'add-tag' %}" style="width: 100%">Add a new tag</a>
+{% endblock content %}

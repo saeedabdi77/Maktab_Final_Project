@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}My posts{% endblock %}
+
+
+{% block content %}
+{% load static %}
+{% if posts %}
+{% for post in posts %}
+{% if post.status == 'published' %}
+<div class="card my-5 p-5" style="width: 100%; border-color: blue">
+    <div class="card-block">
+        <h1 class="card-title">{{post.title}}</h1>
+        <h3 class="card-subtitle text-muted">{{post.publisher.user.username}}</h3>
+    </div>
+    <img data-src="holder.js/100px180/?text=Image" alt="Image [100%x180]"
+         src="{{post.image.url}}"
+         data-holder-rendered="true" style=" display: block;">
+    <div class="card-block">
+        {% if post.caption %}
+        <hr>
+        <div class="text-center">{{post.caption}}</div>
+        <hr>
+        {% endif %}
+
+        {% if post.tags %}
+        {% for tag in post.tags.all %}
+        <p style="color: blue">#{{tag.name}}</p>
+        {% endfor %}
+        <hr>
+        {% endif %}
+
+
+        <small class="card-text">{{post.created_at}}</small>
+        <a href="/blog/post-detail/{{post.slug}}/" class="card-link" style="float: right">comments</a>
+        <a href="/blog/delete-post/{{post.slug}}/" class="card-link mr-5" style="float: right; color: red">delete</a>
+        <a href="/blog/update-published-post/{{post.slug}}/" class="card-link mr-5" style="float: right; color: green">update</a>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+<h1 style="color: black">drafts:</h1>
+{% for post in posts %}
+{% if post.status == 'draft' %}
+<div class="card my-5 p-5" style="width: 50%; border-color: blue; float: right">
+    <div class="card-block">
+        <h1 class="card-title">{{post.title}}</h1>
+        <h3 class="card-subtitle text-muted">{{post.publisher.user.username}}</h3>
+    </div>
+    <img data-src="holder.js/100px180/?text=Image" alt="Image [100%x180]"
+         src="{{post.image.url}}"
+         data-holder-rendered="true" style=" display: block;">
+    <div class="card-block">
+        {% if post.caption %}
+        <hr>
+        <div class="text-center">{{post.caption}}</div>
+        <hr>
+        {% endif %}
+
+        {% if post.tags %}
+        {% for tag in post.tags.all %}
+        <p style="color: blue">#{{tag.name}}</p>
+        {% endfor %}
+        <hr>
+        {% endif %}
+
+
+        <small class="card-text">{{post.created_at}}</small>
+        <a href="/blog/delete-post/{{post.slug}}/" class="card-link mr-5" style="float: right; color: red">delete</a>
+        <a href="/blog/update-draft-post/{{post.slug}}/" class="card-link mr-5" style="float: right; color: green">post</a>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% else %}
+<div class="text-center" style="height: 500px">
+    <p>Post your first photo</p>
+    <a href="{% url 'create-post' %}">click here</a>
+</div>
+{% endif %}
+{% endblock content %}

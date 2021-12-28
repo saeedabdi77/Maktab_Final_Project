@@ -1,0 +1,170 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}title{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'base-css.css' %}">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"
+          integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+
+
+    <!-- Bootstrap CSS CDN -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <!-- Scrollbar Custom CSS -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
+
+
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+          integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+
+
+</head>
+<body>
+
+
+<div class="wrapper">
+    <!-- Sidebar Holder -->
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            {% if user.is_authenticated %}
+            <h3>{{user.username}}</h3>
+            {% else %}
+            <h3>BLOG </h3>
+            {% endif %}
+            </h3>
+        </div>
+
+        <ul class="list-unstyled components">
+            <p>Pages</p>
+            <li class="active">
+                <a href="{% url 'home' %}">Home</a>
+
+            </li>
+            <li class="active">
+                <a href="{% url 'category' %}">Category</a>
+            <li class="active">
+                <a href="{% url 'tags' %}">Tags</a>
+
+                {% if user.is_authenticated %}
+                <p>Profile</p>
+            </li>
+            <li class="active">
+                <a href="{% url 'my-posts' %}">My posts</a>
+            </li>
+            <li class="active">
+                <a href="{% url 'create-post' %}">Post a new photo</a>
+            </li>
+            <li class="active">
+                <a href="{% url 'change-profile' %}">Change profile photo</a>
+            </li>
+            <li class="active">
+                <a href="{% url 'change-password' %}">Change password</a>
+            </li>
+            {% endif %}
+
+        </ul>
+        <ul class="list-unstyled components">
+            <li>
+        <a href="{% url 'get-message' %}">Contact us</a>
+            </li>
+            </ul>
+
+
+    </nav>
+
+    <!-- Page Content Holder -->
+    <div id="content">
+
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            {% if user.is_authenticated %}
+                            <a class="d-flex align-items-center " href="/blog/profile/{{user.username}}/"
+                               role="button">
+                                {% if user.extenduser.image %}
+                                <img src="{{user.extenduser.image.url}}" class="rounded-circle"
+                                     height="25" alt="" loading="lazy">
+                                {% elif user.extenduser.gender == 'M' %}
+                                <img src="{% static 'male-avatar.jpg' %}" class="rounded-circle"
+                                     height="25" alt="" loading="lazy">
+                                {% else %}
+                                <img src="{% static 'female-avatar.jpg' %}" class="rounded-circle"
+                                     height="25" alt="" loading="lazy">
+                                {% endif %}
+
+                            </a>
+
+
+                            {% else %}
+                            <a href="{% url 'login' %}">Login</a>
+                            {% endif %}
+                        </li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'logout' %}">logout</a>
+                            {% else %}
+                            <a href="{% url 'signup' %}">SignUp</a>
+                            {% endif %}
+                        </li>
+
+                    </ul>
+
+                    <form class="form-inline mt-3 navbar-right justify-content-center" action="{% url 'search' %}"
+                          method="GET">
+                        <input class="form-control " type="search" placeholder="Search" aria-label="Search" name="q">
+                        <button class="btn btn-outline-success " type="submit">Search</button>
+                    </form>
+
+                    <button type="button" id="sidebarCollapse" class="btn btn-info navbar-btn ">
+                        <i class="glyphicon glyphicon-align-left"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+
+        <div class="container">
+
+            {% block content %}
+
+
+            {% endblock content %}
+
+        </div>
+
+    </div>
+</div>
+
+
+<!-- jQuery CDN -->
+<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+<!-- Bootstrap Js CDN -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<!-- jQuery Custom Scroller CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+
+        $('#sidebarCollapse').on('click', function () {
+            $('#sidebar, #content').toggleClass('active');
+            $('.collapse.in').toggleClass('in');
+            $('a[aria-expanded=true]').attr('aria-expanded', 'false');
+        });
+    });
+</script>
+
+
+</body>
+</html>

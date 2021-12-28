@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Change profile photo{% endblock %}
+
+
+{% block content %}
+{% load static %}
+<div class="row justify-content-center"><h1>{{user.username}}</h1></div>
+<div class="row justify-content-center">
+    {% if user.extenduser.image %}
+    <img src="{{user.extenduser.image.url}}" class="rounded-circle"
+         height="300" alt="" loading="lazy">
+    {% elif user.extenduser.gender == 'M' %}
+    <img src="{% static 'male-avatar.jpg' %}" class="rounded-circle"
+         height="300" alt="" loading="lazy">
+    {% else %}
+    <img src="{% static 'female-avatar.jpg' %}" class="rounded-circle"
+         height="300" alt="" loading="lazy">
+    {% endif %}
+</div>
+<br>
+<div class="row justify-content-center">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <input id="id_image" type="file" class="" name="image">
+        <br>
+        <button type="submit" class="btn btn-primary btn-block "> OK</button>
+    </form>
+</div>
+
+{% endblock content %}

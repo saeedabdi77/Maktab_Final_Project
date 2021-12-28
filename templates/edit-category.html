@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Edit {{category.title}}{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="col-md-12 my-3">
+        <form action="" method="post">
+            {% csrf_token %}
+            <div class="text-center">
+                {{ form}}
+
+                <input type="submit" class="btn btn-success" value="OK">
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock content %}
