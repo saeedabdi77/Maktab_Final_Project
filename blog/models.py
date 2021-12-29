@@ -1,31 +1,9 @@
-from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.db import models
 from django.template.defaultfilters import slugify
 from django.utils.text import slugify
 import random
 from django.db.models.signals import pre_save
-
-
-class ExtendUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    GENDER_CHOICES = (
-        ('M', 'Male'),
-        ('F', 'Female'),
-    )
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
-    image = models.ImageField(upload_to='profile', blank=True, null=True)
-
-    def __str__(self):
-        return self.user.username
-
-
-@receiver(post_save, sender=User)
-def update_extend_user_signal(sender, instance, created, **kwargs):
-    if created:
-        ExtendUser.objects.create(user=instance)
-    instance.extenduser.save()
+from users.models import ExtendUser
 
 
 class Category(models.Model):

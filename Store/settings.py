@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'shop',
     'users',
     'django_extensions',
+    'cities_light',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -132,7 +134,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    # str(BASE_DIR)  +"/static",
     BASE_DIR / 'static'
 ]
 
@@ -149,3 +150,7 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'DjangoProject.blogg@gmail.com'
 EMAIL_HOST_PASSWORD = '27041377'
+
+CITIES_LIGHT_TRANSLATION_LANGUAGES = ['en']
+CITIES_LIGHT_INCLUDE_COUNTRIES = ['IR']
+# CITIES_LIGHT_INCLUDE_CITY_TYPES = ['PPL', 'PPLA', 'PPLA2', 'PPLA3', 'PPLA4', 'PPLC', 'PPLF', 'PPLG', 'PPLL', 'PPLR', 'PPLS', 'STLMT',]
