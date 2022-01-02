@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models.signals import pre_save
 import random
 from django.utils.text import slugify
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Q
 from users.models import ExtendUser, Address, Seller
 
 
@@ -26,29 +26,30 @@ class ProductComment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-class ProductImage(models.Model):
-    image = models.ImageField(upload_to='Product')
-    main = models.BooleanField(default=False)
+class ProductField(models.Model):
+    name = models.CharField(max_length=50)
 
-    # save
-    # defauylt false
+
+class ProductType(models.Model):
+    name = models.CharField(max_length=50)
+    details = models.ManyToManyField(ProductField)
 
 
 class Product(models.Model):
     brand = models.ForeignKey(Brand, blank=True, null=True, on_delete=models.PROTECT)
     name = models.CharField(max_length=250, unique=False)
+    type = models.ForeignKey(ProductType, on_delete=models.PROTECT, blank=True, null=True)
     description = models.TextField()
     price = models.FloatField()
     quantity = models.IntegerField(default=0)
-    images = models.ManyToManyField(ProductImage)
     categories = models.ManyToManyField(Category, blank=True)
     comments = models.ManyToManyField(ProductComment, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(max_length=50, null=True, blank=True)
 
-    def get_main_image(self):
-        return self.images.get(main=True).image
+    def get_default_image(self):
+        return ProductImage.objects.filter(product=self).get(default=True).image
 
     def availability(self):
         if self.quantity == 0:
@@ -86,6 +87,44 @@ def pre_save_receiver(sender, instance, *args, **kwargs):
 
 
 pre_save.connect(pre_save_receiver, sender=Product)
+
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='Product')
+    default = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if self.default:
+            ProductImage.objects.filter(product=self.product).exclude(pk=self.pk).update(default=False)
+        elif not ProductImage.objects.filter(product=self.product).filter(default=True).exists():
+            self.default = True
+        super(ProductImage, self).save(*args, **kwargs)
+
+
+class ProductRate(models.Model):
+    rate_choices = [
+        (1, 1),
+        (2, 2),
+        (3, 3),
+        (4, 4),
+        (5, 5)
+    ]
+    user = models.ForeignKey(ExtendUser, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    rate = models.IntegerField(choices=rate_choices)
+
+    class Meta:
+        unique_together = ['user', 'product']
+
+
+class ProductDetail(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    key = models.ForeignKey(ProductField, on_delete=models.CASCADE)
+    value = models.CharField(max_length=50)
+
+    class Meta:
+        unique_together = ['key', 'product']
 
 
 class Favourite(models.Model):
