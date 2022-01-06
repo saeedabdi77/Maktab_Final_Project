@@ -1,0 +1,26 @@
+{% extends "shop-base.html" %}
+{% block title %}Order detail{% endblock %}
+{% block content %}
+{% load static %}
+
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Product</th>
+      <th scope="col">Quantity</th>
+      <th scope="col">Price</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for item in cart_items %}
+  <tr>
+      <td>{{ item.product }}</td>
+      <td>{{ item.quantity }}</td>
+      <td>{{ item.product.price }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<a href="{% url 'store-orders' pk %}">Back to orders</a>
+{% endblock content %}

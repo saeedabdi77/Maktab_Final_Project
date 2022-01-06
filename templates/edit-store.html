@@ -1,0 +1,71 @@
+{% extends "shop-base.html" %}
+{% block title %}Edit {{store.name}}{% endblock %}
+{% block content %}
+
+<style>
+    input, textarea, select{
+    width:100%;
+}
+    label{
+        display: block;
+        width : 100px:
+    }
+
+</style>
+<div class="row justify-content-center ">
+    <div class="col-md-6">
+        <article class="card">
+            <header class="card-header">
+                <h4 class="card-title text-center mt-2">Register your store</h4>
+            </header>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="form-group">
+
+
+                    <div class="form-group">
+                        {{ form.image.errors }}
+                        <label for="{{ form.image.id_for_label }}">Image</label>
+                        {{ form.image }}
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        {{ form.name.errors }}
+                        <label for="{{ form.name.id_for_label }}">Name</label>
+                        {{ form.name }}
+                    </div>
+
+                    <div class="fieldWrapper">
+                        {{ form.type.errors }}
+                        <label for="{{ form.type.id_for_label }}">Type</label>
+                        {{ form.type }}
+                    </div>
+                    <div class="fieldWrapper">
+                        {{ form.province.errors }}
+                        <label for="{{ form.province.id_for_label }}">Province</label>
+                        {{ form.province }}
+                    </div>
+                    <div class="fieldWrapper">
+                        {{ form.city.errors }}
+                        <label for="{{ form.city.id_for_label }}">City</label>
+                        {{ form.city }}
+                    </div>
+                    <div class="fieldWrapper">
+                        {{ form.zip_code.errors }}
+                        <label for="{{ form.zip_code.id_for_label }}">Zip_code</label>
+                        {{ form.zip_code }}
+                    </div>
+                    <div class="fieldWrapper">
+                        {{ form.address_description.errors }}
+                        <label for="{{ form.address_description.id_for_label }}">Address_description</label>
+                        {{ form.address_description }}
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Register</button>
+                </div>
+            </form>
+        </article>
+    </div>
+</div>
+</div>
+{% endblock content %}

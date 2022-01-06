@@ -152,7 +152,7 @@ class CreatePost(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = self.form(request.POST, request.FILES)
         if form.is_valid():
-            form.instance.publisher = request.user.extenduser
+            form.instance.publisher = request.user.seller
             post = form
             post.save()
             return redirect(reverse('my-posts'))
@@ -164,7 +164,7 @@ class MyPosts(LoginRequiredMixin, View):
     template_name = 'my-posts.html'
 
     def get(self, request):
-        queryset = Post.objects.filter(publisher=request.user.extenduser).order_by('-created_at')
+        queryset = Post.objects.filter(publisher=request.user.seller).order_by('-created_at')
         return render(request, self.template_name, {'posts': queryset})
 
 
@@ -230,10 +230,10 @@ class PostDetail(View):
         dislikes = post.dislike_set.all()
         if request.user.is_authenticated:
             is_liked = False
-            if likes.filter(user=request.user.extenduser).exists():
+            if likes.filter(user=request.user.seller).exists():
                 is_liked = True
             is_disliked = False
-            if dislikes.filter(user=request.user.extenduser).exists():
+            if dislikes.filter(user=request.user.seller).exists():
                 is_disliked = True
             return render(request, 'post-detail.html',
                           {'post': post, 'comments': comments, 'form': self.form, 'likes': len(likes),
@@ -249,7 +249,7 @@ class PostDetail(View):
         if form.is_valid():
             if request.POST.get('parent_id'):
                 form.instance.parent = Comment.objects.get(id=int(request.POST.get('parent_id')))
-            form.instance.publisher = request.user.extenduser
+            form.instance.publisher = request.user.seller
             form.instance.post = Post.objects.get(slug=slug)
             comment = form
             comment.save()
@@ -259,21 +259,21 @@ class PostDetail(View):
         likes = post.like_set.all()
         dislikes = post.dislike_set.all()
         if request.POST.get('liked_id'):
-            if likes.filter(user=request.user.extenduser).exists():
-                Like.objects.get(post=post, user=request.user.extenduser).delete()
+            if likes.filter(user=request.user.seller).exists():
+                Like.objects.get(post=post, user=request.user.seller).delete()
             else:
-                Like.objects.create(post=post, user=request.user.extenduser)
+                Like.objects.create(post=post, user=request.user.seller)
         if request.POST.get('disliked_id'):
-            if dislikes.filter(user=request.user.extenduser).exists():
-                DisLike.objects.get(post=post, user=request.user.extenduser).delete()
+            if dislikes.filter(user=request.user.seller).exists():
+                DisLike.objects.get(post=post, user=request.user.seller).delete()
             else:
-                DisLike.objects.create(post=post, user=request.user.extenduser)
+                DisLike.objects.create(post=post, user=request.user.seller)
 
         is_liked = False
-        if likes.filter(user=request.user.extenduser).exists():
+        if likes.filter(user=request.user.seller).exists():
             is_liked = True
         is_disliked = False
-        if dislikes.filter(user=request.user.extenduser).exists():
+        if dislikes.filter(user=request.user.seller).exists():
             is_disliked = True
         return render(request, 'post-detail.html',
                       {'post': post, 'comments': comments, 'form': self.form, 'likes': len(likes),

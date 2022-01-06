@@ -26,7 +26,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_per_page = 10
     fieldsets = (
         (None, {
-            'fields': (('brand', 'name', 'price', 'quantity', 'type'), 'description', ('images', 'categories', 'comments'))
+            'fields': (('store', 'brand', 'name', 'price', 'quantity', 'type'), 'description', ('categories',))
         }),
 
         ('slug', {
@@ -63,7 +63,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(ProductComment)
 class ProductCommentAdmin(admin.ModelAdmin):
-    list_display = ('publisher', 'text')
+    list_display = ('product', 'publisher', 'text')
     search_fields = ['publisher__user__username']
 
 

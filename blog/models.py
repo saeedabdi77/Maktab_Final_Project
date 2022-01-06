@@ -3,7 +3,7 @@ from django.template.defaultfilters import slugify
 from django.utils.text import slugify
 import random
 from django.db.models.signals import pre_save
-from users.models import ExtendUser
+from users.models import Seller
 
 
 class Category(models.Model):
@@ -24,7 +24,7 @@ class Post(models.Model):
     )
     title = models.CharField(max_length=50)
     caption = models.TextField()
-    publisher = models.ForeignKey(ExtendUser, on_delete=models.CASCADE)
+    publisher = models.ForeignKey(Seller, on_delete=models.CASCADE)
     category = models.ManyToManyField(Category)
     image = models.ImageField(upload_to='post')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -41,14 +41,14 @@ class Comment(models.Model):
     parent = models.ForeignKey('Comment', blank=True, null=True, on_delete=models.CASCADE)
     text = models.TextField()
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    publisher = models.ForeignKey(ExtendUser, on_delete=models.CASCADE)
+    publisher = models.ForeignKey(Seller, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 
 class Like(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    user = models.ForeignKey(ExtendUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(Seller, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ['post', 'user']
@@ -56,7 +56,7 @@ class Like(models.Model):
 
 class DisLike(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    user = models.ForeignKey(ExtendUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(Seller, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ['post', 'user']

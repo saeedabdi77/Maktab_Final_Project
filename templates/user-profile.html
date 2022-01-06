@@ -1,15 +1,15 @@
 {% extends "base.html" %}
-{% block title %}{{user_profile.username}}{% endblock %}
+{% block title %}{{user_profile.full_name}}{% endblock %}
 
 
 {% block content %}
 {% load static %}
-<div class="row justify-content-center"><h1>{{user_profile.username}}</h1></div>
+<div class="row justify-content-center"><h1>{{user_profile.full_name}}</h1></div>
 <div class="row justify-content-center">
-    {% if user_profile.extenduser.image %}
-    <img src="{{user_profile.extenduser.image.url}}" class="rounded-circle"
+    {% if user_profile.seller.image %}
+    <img src="{{user_profile.seller.image.url}}" class="rounded-circle"
          height="300" alt="" loading="lazy">
-    {% elif user_profile.extenduser.gender == 'M' %}
+    {% elif user_profile.seller.gender == 'M' %}
     <img src="{% static 'male-avatar.jpg' %}" class="rounded-circle"
          height="300" alt="" loading="lazy">
     {% else %}
@@ -28,7 +28,7 @@
 <div class="card my-5 p-5" style="width: 100%; border-color: blue">
     <div class="card-block">
         <h1 class="card-title">{{post.title}}</h1>
-        <h3 class="card-subtitle text-muted">{{post.publisher.user.username}}</h3>
+        <h3 class="card-subtitle text-muted">{{post.publisher.user.full_name}}</h3>
     </div>
     <img data-src="holder.js/100px180/?text=Image" alt="Image [100%x180]"
          src="{{post.image.url}}"

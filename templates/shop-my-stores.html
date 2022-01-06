@@ -1,0 +1,40 @@
+{% extends "shop-base.html" %}
+{% block title %}My stores{% endblock title %}
+
+{% block content %}
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% for store in stores %}
+{% if store.status == 'confirmed' %}
+<div class="col-md-12">
+    <div class="card" style="">
+        <img src="{{store.image.url}}" class="card-img-top" alt="...">
+        <div class="card-body">
+            <h3 class="card-title">{{store.name}}</h3>
+            <a href="{% url 'store-detail' store.id %}" class="btn btn-primary">Go to store</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+<h4>Processing:</h4>
+{% for store in stores %}
+{% if store.status == 'processing' %}
+<div class="col-md-12">
+    <div class="card" >
+        <img src="{{store.image.url}}" class="card-img-top" alt="...">
+        <div class="card-body">
+            <h3 class="card-title">{{store.name}}</h3>
+            <a href="{% url 'store-detail' store.id %}" class="btn btn-primary">Go to store</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endblock content %}

@@ -1,0 +1,23 @@
+{% extends "shop-base.html" %}
+{% block title %}Delete store{% endblock %}
+
+
+{% block content %}
+{% load static %}
+
+<div class="container">
+    <div class="col-md-12 my-3">
+        <form action="" method="post">
+            {% csrf_token %}
+            {{ form }}
+            <div class="text-center">
+                <strong>Are you sure you want to delete {{store.name}} ?</strong>
+                <br>
+                <input class="btn btn-danger" type="submit" value="YES">
+                <a href="{%url 'store-detail' store.id %}" class="btn btn-primary">NO</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock content %}

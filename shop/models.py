@@ -3,7 +3,7 @@ from django.db.models.signals import pre_save
 import random
 from django.utils.text import slugify
 from django.db.models import Sum, F, Q
-from users.models import ExtendUser, Address, Seller
+from users.models import Address, Seller, CustomUser
 
 
 class Category(models.Model):
@@ -20,10 +20,30 @@ class Brand(models.Model):
         return self.name
 
 
-class ProductComment(models.Model):
-    publisher = models.ForeignKey(ExtendUser, on_delete=models.CASCADE)
-    text = models.TextField()
+class StoreType(models.Model):
+    title = models.CharField(max_length=250)
+
+    def __str__(self):
+        return self.title
+
+
+class Store(models.Model):
+    status_choices = (
+        ('processing', 'processing'),
+        ('confirmed', 'confirmed'),
+        ('deleted', 'deleted')
+    )
+    owner = models.ForeignKey(Seller, on_delete=models.PROTECT)
+    name = models.CharField(max_length=50)
+    type = models.ForeignKey(StoreType, on_delete=models.PROTECT)
+    image = models.ImageField(upload_to='store')
+    address = models.OneToOneField(Address, on_delete=models.PROTECT)
+    status = models.CharField(max_length=10, choices=status_choices)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
 
 
 class ProductField(models.Model):
@@ -34,8 +54,16 @@ class ProductType(models.Model):
     name = models.CharField(max_length=50)
     details = models.ManyToManyField(ProductField)
 
+    def __str__(self):
+        return self.name
+
 
 class Product(models.Model):
+    status_choices = (
+        ('processing', 'processing'),
+        ('confirmed', 'confirmed'),
+    )
+    store = models.ForeignKey(Store, on_delete=models.PROTECT)
     brand = models.ForeignKey(Brand, blank=True, null=True, on_delete=models.PROTECT)
     name = models.CharField(max_length=250, unique=False)
     type = models.ForeignKey(ProductType, on_delete=models.PROTECT, blank=True, null=True)
@@ -43,7 +71,7 @@ class Product(models.Model):
     price = models.FloatField()
     quantity = models.IntegerField(default=0)
     categories = models.ManyToManyField(Category, blank=True)
-    comments = models.ManyToManyField(ProductComment, blank=True)
+    status = models.CharField(max_length=10, choices=status_choices)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(max_length=50, null=True, blank=True)
@@ -89,6 +117,13 @@ def pre_save_receiver(sender, instance, *args, **kwargs):
 pre_save.connect(pre_save_receiver, sender=Product)
 
 
+class ProductComment(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    publisher = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='Product')
@@ -110,7 +145,7 @@ class ProductRate(models.Model):
         (4, 4),
         (5, 5)
     ]
-    user = models.ForeignKey(ExtendUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     rate = models.IntegerField(choices=rate_choices)
 
@@ -128,23 +163,31 @@ class ProductDetail(models.Model):
 
 
 class Favourite(models.Model):
-    user = models.OneToOneField(ExtendUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     products = models.ManyToManyField(Product)
 
 
-class CartItem(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.PROTECT)
-    quantity = models.IntegerField(default=1)
-
-
 class Cart(models.Model):
-    buyer = models.ForeignKey(ExtendUser, on_delete=models.CASCADE)
-    cart_item = models.ManyToManyField(CartItem)
+    buyer = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def total_price(self):
-        return self.cart_item.aggregate(total_price=Sum(F('quantity') * F('product__price')))['total_price']
+        return self.cartitem_set.aggregate(total_price=Sum(F('quantity') * F('product__price')))['total_price']
+
+
+class CartItem(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    cart = models.ForeignKey(Cart, on_delete=models.PROTECT)
+    quantity = models.IntegerField(default=1)
+
+    def save(self, *args, **kwargs):
+        Product.objects.filter(id=self.product.id).update(quantity=F('quantity') - self.quantity)
+        super(CartItem, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        Product.objects.filter(id=self.product.id).update(quantity=F('quantity') + self.quantity)
+        super(CartItem, self).delete()
 
 
 class Order(models.Model):
@@ -156,29 +199,3 @@ class Order(models.Model):
     )
     cart = models.OneToOneField(Cart, on_delete=models.PROTECT)
     status = models.CharField(max_length=10, choices=status_choices)
-
-
-class StoreType(models.Model):
-    title = models.CharField(max_length=250)
-
-    def __str__(self):
-        return self.title
-
-
-class Store(models.Model):
-    status_choices = (
-        ('processing', 'processing'),
-        ('confirmed', 'confirmed'),
-        ('deleted', 'deleted')
-    )
-    owner = models.ForeignKey(Seller, on_delete=models.PROTECT)
-    name = models.CharField(max_length=50)
-    products = models.ManyToManyField(Product)
-    type = models.OneToOneField(StoreType, on_delete=models.PROTECT)
-    address = models.OneToOneField(Address, on_delete=models.PROTECT)
-    status = models.CharField(max_length=10, choices=status_choices)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.name

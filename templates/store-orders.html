@@ -1,0 +1,51 @@
+{% extends "shop-base.html" %}
+{% block title %}orders{% endblock %}
+{% block content %}
+{% load static %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th scope="col">Buyer</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Total price</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.cart.buyer }}</td>
+                    <td>{{ order.cart.updated_at }}</td>
+                    <td>{{ order.cart.total_price }}</td>
+                    <td>{{ order.status }}</td>
+                    <td>
+                        <form action="" method="post">
+                            {% csrf_token %}
+                            {{ form }}
+                            <button name="action" value="{{ order.id }}-confirmed" type="submit"
+                                    class="btn btn-primary">Confirmed
+                            </button>
+                            <button name="action" value="{{ order.id }}-paid" type="submit" class="btn btn-success">
+                                Paid
+                            </button>
+                            <button name="action" value="{{ order.id }}-canceled" type="submit" class="btn btn-danger">
+                                Canceled
+                            </button>
+                            <button style="margin-left: 20px;" name="action" value="{{ order.id }}-info" type="submit" class="btn btn-info">
+                                Info
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}

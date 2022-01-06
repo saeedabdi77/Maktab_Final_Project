@@ -1,0 +1,19 @@
+{% extends "shop-base.html" %}
+{% block title %}Set default{% endblock %}
+{% block content %}
+{% load static %}
+<p>q{{ form.images.queryset }}</p>
+<p>f{{ form.pk }}</p>
+<form method="post">
+
+    {% csrf_token %}
+    <select name='images'>
+    {% for image in form.images %}
+        <option value="{{ image.id }}"><img src="{{ image.url }}"/></option>
+    {% endfor %}
+    </select>
+
+
+    <input type="submit" value="Submit" class="btn btn-primary"/>
+</form>
+{% endblock content %}

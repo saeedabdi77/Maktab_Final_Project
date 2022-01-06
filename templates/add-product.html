@@ -1,0 +1,76 @@
+{% extends "shop-base.html" %}
+{% block title %}Add product{% endblock %}
+{% block content %}
+{% load static %}
+
+<link href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<!------ Include the above in your HEAD tag ---------->
+<link rel="stylesheet" href="{% static 'create-post-css.css' %}">
+<script src="{% static 'create-post-js.js' %}"></script>
+<style>
+    input, textarea, select{
+    width:100%;
+}
+    label{
+        display: block;
+        width : 100px:
+    }
+
+
+</style>
+<div class="row justify-content-center ">
+    <div class="col-md-6">
+        <article class="card">
+            <header class="card-header">
+                <h4 class="card-title text-center mt-2">Add product </h4>
+            </header>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="form-group">
+
+
+
+                    <br>
+                    <div class="form-group">
+                        {{ form.name.errors }}
+                        <label for="{{ form.name.id_for_label }}">Name</label>
+                        {{ form.name }}
+                    </div>
+
+                    <div class="fieldWrapper">
+                        {{ form.brand.errors }}
+                        <label for="{{ form.brand.id_for_label }}">Brand</label>
+                        {{ form.brand }}
+                    </div>
+                    <div class="fieldWrapper">
+                        {{ form.type.errors }}
+                        <label for="{{ form.type.id_for_label }}">Type</label>
+                        {{ form.type }}
+                    </div>
+                    <div class="fieldWrapper">
+                        {{ form.price.errors }}
+                        <label for="{{ form.price.id_for_label }}">Price</label>
+                        {{ form.price }}
+                    </div>
+                    <div class="fieldWrapper">
+                        {{ form.quantity.errors }}
+                        <label for="{{ form.quantity.id_for_label }}">Quantity</label>
+                        {{ form.quantity }}
+                    </div>
+                    <div class="fieldWrapper">
+                        {{ form.description.errors }}
+                        <label for="{{ form.description.id_for_label }}">Description</label>
+                        {{ form.description }}
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Next</button>
+                </div>
+            </form>
+        </article>
+    </div>
+</div>
+</div>
+
+{% endblock content %}
