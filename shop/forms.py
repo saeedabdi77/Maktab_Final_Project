@@ -27,23 +27,19 @@ class ProductImageForm(forms.Form):
 
 
 class DefaultImageForm(forms.Form):
-    # def __init__(self, pk, *args, **kwargs):
-    #     super(DefaultImageForm, self).__init__(*args, **kwargs)
-    #     self.fields['images'].queryset = ProductImage.objects.filter(product=Product.objects.filter(id=pk))
 
-    # images = forms.ModelChoiceField(queryset=ProductImage.objects.all())
     images = forms.ModelMultipleChoiceField(queryset=None)
 
     def __init__(self, pk, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['images'].queryset = ProductImage.objects.filter(product=Product.objects.get(id=pk))
-    # images = forms.ChoiceField(choices=[(item.pk, item) for item in ProductImage.objects.all()])
 
-    # def __init__(self, pk, *args, **kwargs):
-    #     super(DefaultImageForm, self).__init__(*args, **kwargs)
-    #     self.fields['images'] = forms.ModelChoiceField(
-    #         queryset=ProductImage.objects.filter(product=Product.objects.get(id=pk)))
-
-
-# class ProductFieldFrom(forms.Form):
-
+# def save
+class DateForm(forms.Form):
+    date = forms.DateTimeField(
+        input_formats=['%d/%m/%Y %H:%M'],
+        widget=forms.DateTimeInput(attrs={
+            'class': 'form-control datetimepicker-input',
+            'data-target': '#datetimepicker1'
+        })
+    )

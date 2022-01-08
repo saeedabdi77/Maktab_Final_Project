@@ -3,13 +3,14 @@ from django.views.generic import ListView, TemplateView
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Store, Product, ProductImage, Order, Cart, CartItem
-from .forms import AddStoreForm, AddProductForm, ProductImageForm, DefaultImageForm
+from .forms import AddStoreForm, AddProductForm, ProductImageForm, DefaultImageForm, DateForm
 from users.models import Address
 from cities_light.models import City, Region
 from django.contrib import messages
 from django.views.generic.edit import FormView
 from django.core.mail import send_mail
 from django.conf import settings
+from datetime import datetime
 
 
 class Home(TemplateView):
@@ -103,7 +104,8 @@ class EditStore(LoginRequiredMixin, View):
     def post(self, request, pk):
         form = self.form(request.POST, request.FILES, instance=Store.objects.get(id=pk))
         if form.is_valid():
-            if Store.objects.filter(owner=request.user.seller).filter(status='processing').exclude(pk=form.instance.pk).exists():
+            if Store.objects.filter(owner=request.user.seller).filter(status='processing').exclude(
+                    pk=form.instance.pk).exists():
                 messages.error(request, 'You already have one store processing, you can not register another one!')
                 return redirect(reverse('shop-my-stores'))
             if form.instance.owner != request.user.seller:
@@ -182,6 +184,7 @@ class SetDefaultImage(LoginRequiredMixin, View):
 class StoreOrder(LoginRequiredMixin, View):
     login_url = '/accounts/login/'
     template_name = 'store-orders.html'
+    form = DateForm
 
     def get(self, request, pk):
         cart_items = CartItem.objects.filter(product__store=Store.objects.get(id=pk))
@@ -193,9 +196,37 @@ class StoreOrder(LoginRequiredMixin, View):
             if (Order.objects.filter(cart=cart).exists()) and (Order.objects.get(cart=cart) not in orders):
                 orders.append(Order.objects.get(cart=cart))
         orders.sort(key=lambda x: x.cart.updated_at, reverse=True)
-        return render(request, self.template_name, {'orders': orders})
+        return render(request, self.template_name, {'form': self.form, 'orders': orders})
 
     def post(self, request, pk):
+        if request.POST.get('date'):
+            date = datetime.strptime(request.POST.get('date')[:-3], '%m/%d/%Y %H:%M').date()
+            cart_items = CartItem.objects.filter(product__store=Store.objects.get(id=pk))
+            carts = []
+            for cart_item in cart_items:
+                if Cart.objects.filter(updated_at__date=date).filter(cartitem=cart_item).exists():
+                    carts.append(Cart.objects.filter(updated_at__date=date).get(cartitem=cart_item))
+            orders = []
+            for cart in carts:
+                if (Order.objects.filter(cart=cart).exists()) and (Order.objects.get(cart=cart) not in orders):
+                    orders.append(Order.objects.get(cart=cart))
+            orders.sort(key=lambda x: x.cart.updated_at, reverse=True)
+            return render(request, self.template_name, {'form': self.form, 'orders': orders})
+
+        if request.POST.get('filter'):
+            status = request.POST.get('filter')
+            cart_items = CartItem.objects.filter(product__store=Store.objects.get(id=pk))
+            carts = []
+            for cart_item in cart_items:
+                carts.append(Cart.objects.get(cartitem=cart_item))
+            orders = []
+            for cart in carts:
+                if (Order.objects.filter(cart=cart).exists()) and (
+                        Order.objects.get(cart=cart) not in orders) and (Order.objects.get(cart=cart).status == status):
+                    orders.append(Order.objects.get(cart=cart))
+            orders.sort(key=lambda x: x.cart.updated_at, reverse=True)
+            return render(request, self.template_name, {'form': self.form, 'orders': orders})
+
         action = request.POST.get('action')
         order_id = int(action[0])
         status = action[2:]
@@ -203,7 +234,7 @@ class StoreOrder(LoginRequiredMixin, View):
         order = Order.objects.get(id=order_id)
         if status == 'info':
             cart_items = CartItem.objects.filter(cart__order=order)
-            return render(request, 'order-detail.html', {'cart_items': cart_items,'pk':pk})
+            return render(request, 'order-detail.html', {'cart_items': cart_items, 'pk': pk})
 
         Order.objects.filter(id=order_id).update(status=status)
 
@@ -222,4 +253,4 @@ class StoreOrder(LoginRequiredMixin, View):
             if (Order.objects.filter(cart=cart).exists()) and (Order.objects.get(cart=cart) not in orders):
                 orders.append(Order.objects.get(cart=cart))
         orders.sort(key=lambda x: x.cart.updated_at, reverse=True)
-        return render(request, self.template_name, {'orders': orders})
+        return render(request, self.template_name, {'form': self.form, 'orders': orders})

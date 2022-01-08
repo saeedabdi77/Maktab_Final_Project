@@ -76,6 +76,9 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(max_length=50, null=True, blank=True)
 
+    def get_all_images(self):
+        return ProductImage.objects.filter(product=self)
+
     def get_default_image(self):
         return ProductImage.objects.filter(product=self).get(default=True).image
 

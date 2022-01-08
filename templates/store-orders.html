@@ -3,7 +3,73 @@
 {% block content %}
 {% load static %}
 
+<!-- Bootstrap 4 -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+      integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+        integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+        integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+        crossorigin="anonymous"></script>
+
+<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+      integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+<!-- Moment.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.23.0/moment.min.js"
+        integrity="sha256-VBLiveTKyUZMEzJd6z2mhfxIqz3ZATCuVMawPZGzIfA=" crossorigin="anonymous"></script>
+
+<!-- Tempus Dominus Bootstrap 4 -->
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/css/tempusdominus-bootstrap-4.min.css"
+      integrity="sha256-XPTBwC3SBoWHSmKasAk01c08M6sIA5gF5+sRxqak2Qs=" crossorigin="anonymous"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/js/tempusdominus-bootstrap-4.min.js"
+        integrity="sha256-z0oKYg6xiLq3yJGsp/LsY9XykbweQlHl42jHv2XTBz4=" crossorigin="anonymous"></script>
+
+
+<form method="post">
+    {% csrf_token %}
+    <div class="input-group date" id="datetimepicker1" data-target-input="nearest">
+
+        {{ form }}
+        <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
+            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+        </div>
+    </div>
+    <input name="" type="submit">
+</form>
+
+<br>
+<br>
+<br>
+
+<form action="" method="post">
+    {% csrf_token %}
+    <h3 style="color: black">filter on:</h3>
+    <button name="filter" value="confirmed" type="submit"
+            class="btn btn-secondary">confirmed orders
+    </button>
+    <button name="filter" value="canceled" type="submit"
+            class="btn btn-secondary">canceled orders
+    </button>
+    <button name="filter" value="paid" type="submit"
+            class="btn btn-secondary">paid orders
+    </button>
+    <button name="filter" value="processing" type="submit"
+            class="btn btn-secondary">processing orders
+    </button>
+</form>
+
+<br>
+<br>
+<br>
+
 <div class="container">
+
     <div class="row">
         <div class="col-12">
             <table class="table table-bordered">
@@ -26,7 +92,7 @@
                     <td>
                         <form action="" method="post">
                             {% csrf_token %}
-                            {{ form }}
+
                             <button name="action" value="{{ order.id }}-confirmed" type="submit"
                                     class="btn btn-primary">Confirmed
                             </button>
@@ -36,7 +102,8 @@
                             <button name="action" value="{{ order.id }}-canceled" type="submit" class="btn btn-danger">
                                 Canceled
                             </button>
-                            <button style="margin-left: 20px;" name="action" value="{{ order.id }}-info" type="submit" class="btn btn-info">
+                            <button style="margin-left: 20px;" name="action" value="{{ order.id }}-info" type="submit"
+                                    class="btn btn-info">
                                 Info
                             </button>
                         </form>
@@ -48,4 +115,15 @@
         </div>
     </div>
 </div>
+
+<script>
+      $(function () {
+        $("#datetimepicker1").datetimepicker();
+      });
+
+
+
+
+
+</script>
 {% endblock content %}
