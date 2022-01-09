@@ -33,14 +33,28 @@
 
 <form method="post">
     {% csrf_token %}
-    <div class="input-group date" id="datetimepicker1" data-target-input="nearest">
-
-        {{ form }}
-        <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
-            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+    <div class="form-group">
+        <div class="fieldWrapper">
+            <div class="input-group date" id="datetimepicker1" data-target-input="nearest">
+                <label for="{{ form.start.id_for_label }}">Start</label>
+                {{ form.start }}
+                <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
+            </div>
         </div>
+        <div class="fieldWrapper">
+            <div class="input-group date" id="datetimepicker2" data-target-input="nearest">
+                <label for="{{ form.end.id_for_label }}">End</label>
+                {{ form.end }}
+                <div class="input-group-append" data-target="#datetimepicker2" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <input name="date" type="submit" style="float: right">
     </div>
-    <input name="" type="submit">
 </form>
 
 <br>
@@ -120,6 +134,8 @@
       $(function () {
         $("#datetimepicker1").datetimepicker();
       });
+
+
 
 
 

@@ -2,18 +2,25 @@
 {% block title %}Set default{% endblock %}
 {% block content %}
 {% load static %}
-<p>q{{ form.images.queryset }}</p>
-<p>f{{ form.pk }}</p>
+
 <form method="post">
 
     {% csrf_token %}
-    <select name='images'>
-    {% for image in form.images %}
-        <option value="{{ image.id }}"><img src="{{ image.url }}"/></option>
+    {% for image in images %}
+    <div class="col-md-4">
+        <div class="thumbnail">
+            <img src="{{ image.image.url }}" alt="Lights" style="width:100%; height:200px">
+            <p style="color : red">{{ forloop.counter }}</p>
+        </div>
+    </div>
     {% endfor %}
+    <select class="form-select" aria-label="Default select example" name="default">
+        {% for image in images %}
+        <option name="default" value="{{ forloop.counter }}">{{ forloop.counter }}</option>
+        {% endfor %}
     </select>
-
-
     <input type="submit" value="Submit" class="btn btn-primary"/>
 </form>
+
+
 {% endblock content %}

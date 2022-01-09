@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models.signals import pre_save
 import random
 from django.utils.text import slugify
-from django.db.models import Sum, F, Q
+from django.db.models import Sum, F, Q, Count
 from users.models import Address, Seller, CustomUser
 
 
@@ -47,7 +47,10 @@ class Store(models.Model):
 
 
 class ProductField(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class ProductType(models.Model):
@@ -185,12 +188,17 @@ class CartItem(models.Model):
     quantity = models.IntegerField(default=1)
 
     def save(self, *args, **kwargs):
+        if (self.cart.cartitem_set.exists()) and (
+                CartItem.objects.filter(cart__pk=self.cart.pk)[0].product.store != self.product.store):
+            raise Exception
+        if self.quantity > Product.objects.get(id=self.product.id).quantity:
+            raise Exception
         Product.objects.filter(id=self.product.id).update(quantity=F('quantity') - self.quantity)
         super(CartItem, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         Product.objects.filter(id=self.product.id).update(quantity=F('quantity') + self.quantity)
-        super(CartItem, self).delete()
+        super(CartItem, self).delete(*args, **kwargs)
 
 
 class Order(models.Model):

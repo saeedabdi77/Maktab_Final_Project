@@ -17,29 +17,32 @@ class AddStoreForm(forms.ModelForm):
 
 
 class AddProductForm(forms.ModelForm):
-    class Meta:
-        model = Product
-        fields = ('brand', 'name', 'type', 'description', 'price', 'quantity',)
-
-
-class ProductImageForm(forms.Form):
     images = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
 
+    class Meta:
+        model = Product
+        fields = ('brand', 'name', 'type', 'description', 'price', 'quantity', 'images')
 
-class DefaultImageForm(forms.Form):
 
-    images = forms.ModelMultipleChoiceField(queryset=None)
-
-    def __init__(self, pk, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['images'].queryset = ProductImage.objects.filter(product=Product.objects.get(id=pk))
-
-# def save
 class DateForm(forms.Form):
-    date = forms.DateTimeField(
+    start = forms.DateTimeField(
         input_formats=['%d/%m/%Y %H:%M'],
         widget=forms.DateTimeInput(attrs={
             'class': 'form-control datetimepicker-input',
             'data-target': '#datetimepicker1'
         })
     )
+    end = forms.DateTimeField(
+        input_formats=['%d/%m/%Y %H:%M'],
+        widget=forms.DateTimeInput(attrs={
+            'class': 'form-control datetimepicker-input',
+            'data-target': '#datetimepicker1'
+        })
+    )
+
+
+class ProductFieldsForm(forms.Form):
+    def __init__(self, keys, *args, **kwargs ):
+        super(ProductFieldsForm, self).__init__(*args, **kwargs)
+        for detail in keys:
+            self.fields[detail.name] = forms.CharField(max_length=50)

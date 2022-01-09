@@ -2,8 +2,8 @@ from django.shortcuts import render, reverse, redirect, get_object_or_404
 from django.views.generic import ListView, TemplateView
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import Store, Product, ProductImage, Order, Cart, CartItem
-from .forms import AddStoreForm, AddProductForm, ProductImageForm, DefaultImageForm, DateForm
+from .models import Store, Product, ProductImage, Order, Cart, CartItem, ProductDetail, ProductField
+from .forms import AddStoreForm, AddProductForm, DateForm, ProductFieldsForm
 from users.models import Address
 from cities_light.models import City, Region
 from django.contrib import messages
@@ -146,39 +146,48 @@ class AddProduct(LoginRequiredMixin, View):
                 messages.error(request, 'You don\'t own this store')
                 return redirect(reverse('login'))
             pk = form.save().id
-            return redirect(reverse('add-product-image', args=[pk]))
-
-
-class AddProductImage(LoginRequiredMixin, FormView):
-    login_url = '/accounts/login/'
-    template_name = 'add-product-image.html'
-    form_class = ProductImageForm
-
-    def post(self, request, pk):
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-        files = request.FILES.getlist('images')
-        if form.is_valid():
+            files = request.FILES.getlist('images')
             for f in files:
                 ProductImage.objects.create(image=f, product=Product.objects.get(id=pk))
             return redirect(reverse('default-product-image', args=[pk]))
-        else:
-            return redirect(reverse('add-product-image', args=[pk]))
 
 
 class SetDefaultImage(LoginRequiredMixin, View):
     login_url = '/accounts/login/'
     template_name = 'set-default-image.html'
-    form = DefaultImageForm
 
     def get(self, request, pk):
-        return render(request, self.template_name, {'form': self.form})
+        images = ProductImage.objects.filter(product=Product.objects.get(id=pk))
+        return render(request, self.template_name, {'images': images})
 
     def post(self, request, pk):
+        instance = ProductImage.objects.filter(product=Product.objects.get(id=pk))[int(request.POST.get('default')) - 1]
+        instance.default = True
+        instance.save()
         if Product.objects.get(id=pk).type:
-            return redirect(reverse('add-product-field', args=[pk]))
+            return redirect(reverse('set-product-fields', args=[pk]))
         else:
             return redirect(reverse('store-detail', args=[Product.objects.get(id=pk).store.id]))
+
+
+class AddProductFields(LoginRequiredMixin, View):
+    login_url = '/accounts/login/'
+    template_name = 'add-product-field.html'
+    form = ProductFieldsForm
+
+    def get(self, request, pk):
+        type = Product.objects.get(id=pk).type
+        keys = type.details.all()
+        form = self.form(keys)
+        return render(request, self.template_name, {'form': form, 'pk': pk})
+
+    def post(self, request, pk):
+        for key, value in request.POST.items():
+            if key == 'csrfmiddlewaretoken':
+                continue
+            ProductDetail.objects.create(product=Product.objects.get(id=pk), key=ProductField.objects.get(name=key),
+                                         value=value)
+        return redirect(reverse('store-detail', args=[Product.objects.get(id=pk).store.id]))
 
 
 class StoreOrder(LoginRequiredMixin, View):
@@ -187,44 +196,20 @@ class StoreOrder(LoginRequiredMixin, View):
     form = DateForm
 
     def get(self, request, pk):
-        cart_items = CartItem.objects.filter(product__store=Store.objects.get(id=pk))
-        carts = []
-        for cart_item in cart_items:
-            carts.append(Cart.objects.get(cartitem=cart_item))
-        orders = []
-        for cart in carts:
-            if (Order.objects.filter(cart=cart).exists()) and (Order.objects.get(cart=cart) not in orders):
-                orders.append(Order.objects.get(cart=cart))
-        orders.sort(key=lambda x: x.cart.updated_at, reverse=True)
+        orders = Order.objects.filter(cart__cartitem__product__store=pk)
         return render(request, self.template_name, {'form': self.form, 'orders': orders})
 
     def post(self, request, pk):
         if request.POST.get('date'):
-            date = datetime.strptime(request.POST.get('date')[:-3], '%m/%d/%Y %H:%M').date()
-            cart_items = CartItem.objects.filter(product__store=Store.objects.get(id=pk))
-            carts = []
-            for cart_item in cart_items:
-                if Cart.objects.filter(updated_at__date=date).filter(cartitem=cart_item).exists():
-                    carts.append(Cart.objects.filter(updated_at__date=date).get(cartitem=cart_item))
-            orders = []
-            for cart in carts:
-                if (Order.objects.filter(cart=cart).exists()) and (Order.objects.get(cart=cart) not in orders):
-                    orders.append(Order.objects.get(cart=cart))
-            orders.sort(key=lambda x: x.cart.updated_at, reverse=True)
+            start = datetime.strptime(request.POST.get('start')[:-3], '%m/%d/%Y %H:%M')
+            end = datetime.strptime(request.POST.get('end')[:-3], '%m/%d/%Y %H:%M')
+            orders = Order.objects.filter(cart__updated_at__range=[start, end]).filter(
+                cart__cartitem__product__store=pk)
             return render(request, self.template_name, {'form': self.form, 'orders': orders})
 
         if request.POST.get('filter'):
             status = request.POST.get('filter')
-            cart_items = CartItem.objects.filter(product__store=Store.objects.get(id=pk))
-            carts = []
-            for cart_item in cart_items:
-                carts.append(Cart.objects.get(cartitem=cart_item))
-            orders = []
-            for cart in carts:
-                if (Order.objects.filter(cart=cart).exists()) and (
-                        Order.objects.get(cart=cart) not in orders) and (Order.objects.get(cart=cart).status == status):
-                    orders.append(Order.objects.get(cart=cart))
-            orders.sort(key=lambda x: x.cart.updated_at, reverse=True)
+            orders = Order.objects.filter(cart__cartitem__product__store=pk).filter(status=status)
             return render(request, self.template_name, {'form': self.form, 'orders': orders})
 
         action = request.POST.get('action')
@@ -244,13 +229,5 @@ class StoreOrder(LoginRequiredMixin, View):
         recipient_list = [order.cart.buyer.email]
         send_mail(subject, message, email_from, recipient_list)
 
-        cart_items = CartItem.objects.filter(product__store=Store.objects.get(id=pk))
-        carts = []
-        for cart_item in cart_items:
-            carts.append(Cart.objects.get(cartitem=cart_item))
-        orders = []
-        for cart in carts:
-            if (Order.objects.filter(cart=cart).exists()) and (Order.objects.get(cart=cart) not in orders):
-                orders.append(Order.objects.get(cart=cart))
-        orders.sort(key=lambda x: x.cart.updated_at, reverse=True)
+        orders = Order.objects.filter(cart__cartitem__product__store=pk)
         return render(request, self.template_name, {'form': self.form, 'orders': orders})
