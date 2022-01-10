@@ -1,0 +1,56 @@
+{% extends "shop-base.html" %}
+{% block title %}Store detail{% endblock %}
+{% block content %}
+{% load static %}
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<div id="myChart" style="width:100%; max-width:600px; height:500px;"></div>
+
+<div id="myChart2" style="width:100%; max-width:600px; height:500px;"></div>
+<a href="{% url 'store-detail' pk %}">Back to store</a>
+
+<script>
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(drawChart);
+
+function drawChart() {
+var data = google.visualization.arrayToDataTable([
+  ['Product', 'amount'],
+  {% for i in report %}
+  [ '{{i.cart__cartitem__product__slug}}' , {{i.total_amount}} ],
+  {% endfor %}
+]);
+
+var options = {
+  title:'Amount of sold products'
+};
+
+var chart = new google.visualization.BarChart(document.getElementById('myChart'));
+  chart.draw(data, options);
+}
+
+
+
+
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(drawChart2);
+
+function drawChart2() {
+var data = google.visualization.arrayToDataTable([
+  ['Product', 'price'],
+  {% for i in report %}
+  [ '{{i.cart__cartitem__product__slug}}' , {{i.total_price}} ],
+  {% endfor %}
+]);
+
+var options = {
+  title:'Total price of sold products'
+};
+
+var chart = new google.visualization.PieChart(document.getElementById('myChart2'));
+  chart.draw(data, options);
+}
+
+</script>
+
+{% endblock content %}

@@ -26,7 +26,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_per_page = 10
     fieldsets = (
         (None, {
-            'fields': (('store', 'brand', 'name', 'price', 'quantity', 'type'), 'description', ('categories',))
+            'fields': (('store', 'brand', 'name', 'price', 'quantity', 'type', 'status'), 'description', ('categories',))
         }),
 
         ('slug', {
@@ -48,16 +48,16 @@ class FavoriteAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('get_owner', 'get_updated_at', 'get_total', 'status')
+    list_display = ('buyer', 'updated_at', 'total', 'status')
     list_filter = ['status']
 
-    def get_owner(self, obj):
+    def buyer(self, obj):
         return obj.cart.buyer
 
-    def get_updated_at(self, obj):
+    def updated_at(self, obj):
         return obj.cart.updated_at
 
-    def get_total(self, obj):
+    def total(self, obj):
         return obj.cart.total_price()
 
 

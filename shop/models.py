@@ -188,6 +188,7 @@ class CartItem(models.Model):
     quantity = models.IntegerField(default=1)
 
     def save(self, *args, **kwargs):
+        # unique cart and product
         if (self.cart.cartitem_set.exists()) and (
                 CartItem.objects.filter(cart__pk=self.cart.pk)[0].product.store != self.product.store):
             raise Exception

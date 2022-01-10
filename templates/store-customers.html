@@ -1,0 +1,32 @@
+{% extends "shop-base.html" %}
+{% block title %}Store customers{% endblock %}
+{% block content %}
+{% load static %}
+
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Email</th>
+        <th scope="col">Orders</th>
+        <th scope="col">Number of products bought</th>
+        <th scope="col">Total price</th>
+        <th scope="col">Last order</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for i in info %}
+    <tr>
+        <td>{{ i.0 }}</td>
+        <td>{{ i.1 }}</td>
+        <td>{{ i.3 }}</td>
+        <td>{{ i.4 }}</td>
+        <td>{{ i.5 }}</td>
+        <td>{{ i.2 }}</td>
+    </tr>
+
+    {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'store-detail' pk %}">Back to store</a>
+{% endblock content %}

@@ -15,6 +15,8 @@
         <a type="button" class="btn btn-success" href="{% url 'add-product' store.id %}" style="float: center">Add
             product</a>
         <a type="button" class="btn btn-warning" href="{% url 'store-orders' store.id %}">Orders</a>
+        <a type="button" class="btn btn-secondary" href="{% url 'store-customers' store.id %}">Customers</a>
+        <a type="button" class="btn btn-dark" href="{% url 'store-report' store.id %}">Store report</a>
     </div>
 </div>
 <br>
@@ -76,11 +78,14 @@
                 <li class="list-group-item">available : {{ product.availability }}</li>
                 <li class="list-group-item">quantity : {{ product.quantity }}</li>
                 <li class="list-group-item">price : {{ product.price }}</li>
+                <li class="list-group-item">
+                    <a href="{% url 'edit-product' product.id%}" class="card-link">Update</a>
+                    {% if product.type %}
+                    <a href="{% url 'product-detail' product.slug %}" class="card-link">Details</a>
+                    {% endif %}
+                </li>
             </ul>
-            <!--        <div class="card-body">-->
-            <!--            <a href="#" class="card-link">Card link</a>-->
-            <!--            <a href="#" class="card-link">Another link</a>-->
-            <!--        </div>-->
+
         </div>
     </div>
     {% endif %}
@@ -141,11 +146,13 @@
                 <li class="list-group-item">available : {{ product.availability }}</li>
                 <li class="list-group-item">quantity : {{ product.quantity }}</li>
                 <li class="list-group-item">price : {{ product.price }}</li>
+                <li class="list-group-item">
+                    <a href="{% url 'edit-product' product.id%}" class="card-link">Update</a>
+                    {% if product.type %}
+                    <a href="{% url 'product-detail' product.slug %}" class="card-link">Details</a>
+                    {% endif %}
+                </li>
             </ul>
-            <!--        <div class="card-body">-->
-            <!--            <a href="#" class="card-link">Card link</a>-->
-            <!--            <a href="#" class="card-link">Another link</a>-->
-            <!--        </div>-->
         </div>
     </div>
     {% endif %}

@@ -1,16 +1,19 @@
-from django.shortcuts import render, reverse, redirect, get_object_or_404
-from django.views.generic import ListView, TemplateView
+from django.shortcuts import render, reverse, redirect, get_object_or_404, HttpResponseRedirect
+from django.views.generic import ListView, TemplateView, DetailView
+from django.views.generic.edit import UpdateView
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Store, Product, ProductImage, Order, Cart, CartItem, ProductDetail, ProductField
 from .forms import AddStoreForm, AddProductForm, DateForm, ProductFieldsForm
-from users.models import Address
+from users.models import Address, CustomUser
 from cities_light.models import City, Region
 from django.contrib import messages
 from django.views.generic.edit import FormView
 from django.core.mail import send_mail
 from django.conf import settings
 from datetime import datetime
+from django.db.models import Sum, F, Q, Count, Value, CharField
+from django.db.models.functions import Concat
 
 
 class Home(TemplateView):
@@ -141,7 +144,7 @@ class AddProduct(LoginRequiredMixin, View):
         form = self.form(request.POST, request.FILES)
         if form.is_valid():
             form.instance.store = Store.objects.get(id=pk)
-            form.status = 'processing'
+            form.instance.status = 'processing'
             if form.instance.store.owner != request.user.seller:
                 messages.error(request, 'You don\'t own this store')
                 return redirect(reverse('login'))
@@ -190,6 +193,33 @@ class AddProductFields(LoginRequiredMixin, View):
         return redirect(reverse('store-detail', args=[Product.objects.get(id=pk).store.id]))
 
 
+class EditProduct(LoginRequiredMixin, UpdateView):
+    login_url = '/accounts/login/'
+    template_name = 'edit-product.html'
+    model = Product
+    fields = ['price', 'quantity']
+
+    def form_valid(self, form):
+        form.instance.status = 'processing'
+        super(EditProduct, self).form_valid(form)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse('store-detail', args=[self.object.store.id])
+
+
+class GetProductFields(LoginRequiredMixin, ListView):
+    login_url = '/accounts/login/'
+    template_name = 'product-detail.html'
+    model = ProductDetail
+    context_object_name = 'fields'
+
+    def get_queryset(self):
+        product_slug = self.kwargs['slug']
+        store_id = Product.objects.get(slug=product_slug).store.id
+        return ProductDetail.objects.filter(product__slug=product_slug)
+
+
 class StoreOrder(LoginRequiredMixin, View):
     login_url = '/accounts/login/'
     template_name = 'store-orders.html'
@@ -231,3 +261,45 @@ class StoreOrder(LoginRequiredMixin, View):
 
         orders = Order.objects.filter(cart__cartitem__product__store=pk)
         return render(request, self.template_name, {'form': self.form, 'orders': orders})
+
+
+class StoreCustomers(LoginRequiredMixin, ListView):
+    login_url = '/accounts/login/'
+    template_name = 'store-customers.html'
+    model = Order
+    paginate_by = 100
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        store_orders = Order.objects.filter(cart__cartitem__product__store__id=self.kwargs['pk']).distinct()
+        customers = store_orders.values(customer_id=F('cart__buyer'))
+        context['info'] = []
+        for customer in customers:
+            id = customer['customer_id']
+            name = CustomUser.objects.get(id=id).full_name()
+            email = CustomUser.objects.get(id=id).email
+            last_order = store_orders.filter(cart__buyer__id=id).latest('cart__updated_at').cart.updated_at
+            orders = store_orders.filter(cart__buyer__id=id).aggregate(Count('cart'))['cart__count']
+            products = store_orders.filter(cart__buyer__id=id).aggregate(Sum('cart__cartitem__quantity'))[
+                'cart__cartitem__quantity__sum']
+            total = 0
+            for cart in store_orders.filter(cart__buyer__id=id).values('cart'):
+                total += Cart.objects.get(id=cart['cart']).total_price()
+            context['info'].append([name, email, last_order, orders, products, total])
+
+        context['pk'] = self.kwargs['pk']
+        return context
+
+
+class StoreReport(LoginRequiredMixin, ListView):
+    login_url = '/accounts/login/'
+    template_name = 'store-report.html'
+    model = Order
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['report'] = Order.objects.filter(cart__cartitem__product__store__id=self.kwargs['pk']).values(
+            'cart__cartitem__product__slug').distinct().annotate(total_amount=Sum('cart__cartitem__quantity')).annotate(
+            total_price=Sum(F('cart__cartitem__quantity') * F('cart__cartitem__product__price')))
+        context['pk'] = self.kwargs['pk']
+        return context

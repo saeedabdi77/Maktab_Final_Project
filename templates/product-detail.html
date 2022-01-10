@@ -1,0 +1,12 @@
+{% extends "shop-base.html" %}
+{% block title %}Store detail{% endblock %}
+{% block content %}
+{% load static %}
+
+{% for i in fields %}
+<p>{{ i.key }}  :</p>
+<h3>{{ i.value }}</h3>
+<hr>
+{% endfor %}
+
+{% endblock content %}
