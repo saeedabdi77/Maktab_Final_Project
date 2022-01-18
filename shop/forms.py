@@ -42,7 +42,7 @@ class DateForm(forms.Form):
 
 
 class ProductFieldsForm(forms.Form):
-    def __init__(self, keys, *args, **kwargs ):
+    def __init__(self, keys, *args, **kwargs):
         super(ProductFieldsForm, self).__init__(*args, **kwargs)
         for detail in keys:
             self.fields[detail.name] = forms.CharField(max_length=50)

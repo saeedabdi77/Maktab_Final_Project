@@ -18,6 +18,14 @@ class CustomUserCreationForm(UserCreationForm):
         model = CustomUser
         fields = ('first_name', 'last_name', 'email', 'gender', 'password1', 'password2', 'image')
 
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+            Seller.objects.create(user=user)
+        return user
+
 
 class CustomUserChangeForm(UserChangeForm):
 

@@ -39,6 +39,7 @@ class Store(models.Model):
     image = models.ImageField(upload_to='store')
     address = models.OneToOneField(Address, on_delete=models.PROTECT)
     status = models.CharField(max_length=10, choices=status_choices)
+    slug = models.SlugField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -68,7 +69,7 @@ class Product(models.Model):
     )
     store = models.ForeignKey(Store, on_delete=models.PROTECT)
     brand = models.ForeignKey(Brand, blank=True, null=True, on_delete=models.PROTECT)
-    name = models.CharField(max_length=250, unique=False)
+    name = models.CharField(max_length=50, unique=False)
     type = models.ForeignKey(ProductType, on_delete=models.PROTECT, blank=True, null=True)
     description = models.TextField()
     price = models.FloatField()
@@ -77,7 +78,7 @@ class Product(models.Model):
     status = models.CharField(max_length=10, choices=status_choices)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    slug = models.SlugField(max_length=50, null=True, blank=True)
+    slug = models.SlugField(max_length=100, null=True, blank=True)
 
     def get_all_images(self):
         return ProductImage.objects.filter(product=self)
@@ -121,6 +122,7 @@ def pre_save_receiver(sender, instance, *args, **kwargs):
 
 
 pre_save.connect(pre_save_receiver, sender=Product)
+pre_save.connect(pre_save_receiver, sender=Store)
 
 
 class ProductComment(models.Model):
@@ -188,7 +190,6 @@ class CartItem(models.Model):
     quantity = models.IntegerField(default=1)
 
     def save(self, *args, **kwargs):
-        # unique cart and product
         if (self.cart.cartitem_set.exists()) and (
                 CartItem.objects.filter(cart__pk=self.cart.pk)[0].product.store != self.product.store):
             raise Exception
@@ -201,6 +202,11 @@ class CartItem(models.Model):
         Product.objects.filter(id=self.product.id).update(quantity=F('quantity') + self.quantity)
         super(CartItem, self).delete(*args, **kwargs)
 
+    delete.alters_data = True
+
+    class Meta:
+        unique_together = ['cart', 'product']
+
 
 class Order(models.Model):
     status_choices = (
@@ -211,3 +217,4 @@ class Order(models.Model):
     )
     cart = models.OneToOneField(Cart, on_delete=models.PROTECT)
     status = models.CharField(max_length=10, choices=status_choices)
+    address = models.ForeignKey(Address, on_delete=models.PROTECT, blank=True, null=True)

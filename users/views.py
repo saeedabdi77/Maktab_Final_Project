@@ -48,7 +48,7 @@ class Login(View):
         email = request.POST.get('email')
         password = request.POST.get('password')
         if form.is_valid():
-            user = authenticate(request, username=email, password=password)
+            user = authenticate(request, email=email, password=password)
             if not Seller.objects.filter(user=user).exists():
                 messages.error(request, 'Email or password is incorrect!')
                 return redirect(reverse('login'))

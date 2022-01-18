@@ -3,9 +3,15 @@ from users.models import CustomUser
 
 
 class EmailBackend(ModelBackend):
-    def authenticate(self, request, username=None, password=None, **kwargs):
+    def authenticate(self, request, email=None, username=None, password=None, **kwargs):
         try:
-            user = CustomUser.objects.get(email__iexact=username)
+            if email:
+                i = email
+            elif username:
+                i = username
+            else:
+                i = None
+            user = CustomUser.objects.get(email__iexact=i)
         except Exception:
             return None
 

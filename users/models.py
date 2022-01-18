@@ -6,6 +6,7 @@ from .managers import CustomUserManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from cities_light.models import City, Region
+from versatileimagefield.fields import VersatileImageField, PPOIField
 
 
 class CustomUser(AbstractUser):
@@ -19,7 +20,14 @@ class CustomUser(AbstractUser):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
-    image = models.ImageField(upload_to='profile', blank=True, null=True)
+    image = VersatileImageField(
+        'Image',
+        upload_to='profile/',
+        ppoi_field='image_ppoi',
+        blank=True,
+        null=True
+    )
+    image_ppoi = PPOIField()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
@@ -55,11 +63,11 @@ class Seller(models.Model):
         return str(self.user)
 
 
-@receiver(post_save, sender=CustomUser)
-def update_seller_user_signal(sender, instance, created, **kwargs):
-    if created:
-        Seller.objects.create(user=instance)
-    instance.seller.save()
+# @receiver(post_save, sender=CustomUser)
+# def update_seller_user_signal(sender, instance, created, **kwargs):
+#     if created:
+#         Seller.objects.create(user=instance)
+#     instance.seller.save()
 
 
 # class ExtendUser(models.Model):
