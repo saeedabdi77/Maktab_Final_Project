@@ -12,7 +12,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super(MyTokenObtainPairSerializer, cls).get_token(user)
 
-        # Add custom claims
         token['username'] = user.username
         return token
 
@@ -57,7 +56,7 @@ class RegisterSerializer(serializers.ModelSerializer):
                 gender=validated_data['gender'],
                 image=validated_data['image'],
                 )
-        except:
+        except KeyError:
             user = CustomUser.objects.create(
                 email=validated_data['email'],
                 first_name=validated_data['first_name'],

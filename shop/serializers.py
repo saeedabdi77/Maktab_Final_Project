@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import StoreType, Store, Product, ProductType, Cart, CartItem, Order
 from users.models import Address, CustomUser
 from cities_light.models import Region, City
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class StoreTypeSerializer(serializers.ModelSerializer):
@@ -110,7 +111,9 @@ class OrderAddressSerializer(serializers.Serializer):
         super(OrderAddressSerializer, self).__init__(*args, **kwargs)
         try:
             self.fields['addresses'] = serializers.ChoiceField(choices=[
-                (f'{index+1} - {item.province.name} - {item.city.name} - {item.address_description} - {item.zip_code} ',
-                 item)for index, item in enumerate(Address.objects.filter(user=self.context['request'].user))], required=False)
+                (
+                    f'{index + 1} - {item.province.name} - {item.city.name} - {item.address_description} - {item.zip_code} ',
+                    item) for index, item in enumerate(Address.objects.filter(user=self.context['request'].user))],
+                required=False)
         except:
             pass

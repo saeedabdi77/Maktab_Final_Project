@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models.signals import pre_save
 import random
 from django.utils.text import slugify
-from django.db.models import Sum, F, Q, Count
+from django.db.models import Sum, F
 from users.models import Address, Seller, CustomUser
 
 
@@ -192,9 +192,9 @@ class CartItem(models.Model):
     def save(self, *args, **kwargs):
         if (self.cart.cartitem_set.exists()) and (
                 CartItem.objects.filter(cart__pk=self.cart.pk)[0].product.store != self.product.store):
-            raise Exception
+            raise TypeError
         if self.quantity > Product.objects.get(id=self.product.id).quantity:
-            raise Exception
+            raise ValueError
         Product.objects.filter(id=self.product.id).update(quantity=F('quantity') - self.quantity)
         super(CartItem, self).save(*args, **kwargs)
 

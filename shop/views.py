@@ -1,5 +1,5 @@
 from django.shortcuts import render, reverse, redirect, get_object_or_404, HttpResponseRedirect
-from django.views.generic import ListView, TemplateView, DetailView
+from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import UpdateView
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -8,12 +8,10 @@ from .forms import AddStoreForm, AddProductForm, DateForm, ProductFieldsForm
 from users.models import Address, CustomUser
 from cities_light.models import City, Region
 from django.contrib import messages
-from django.views.generic.edit import FormView
 from django.core.mail import send_mail
 from django.conf import settings
 from datetime import datetime
-from django.db.models import Sum, F, Q, Count, Value, CharField
-from django.db.models.functions import Concat
+from django.db.models import Sum, F, Count
 
 
 class Home(TemplateView):
@@ -188,6 +186,7 @@ class AddProductFields(LoginRequiredMixin, View):
         for key, value in request.POST.items():
             if key == 'csrfmiddlewaretoken':
                 continue
+                # product =
             ProductDetail.objects.create(product=Product.objects.get(id=pk), key=ProductField.objects.get(name=key),
                                          value=value)
         return redirect(reverse('store-detail', args=[Product.objects.get(id=pk).store.id]))
@@ -216,7 +215,6 @@ class GetProductFields(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         product_slug = self.kwargs['slug']
-        store_id = Product.objects.get(slug=product_slug).store.id
         return ProductDetail.objects.filter(product__slug=product_slug)
 
 
