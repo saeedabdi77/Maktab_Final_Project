@@ -1,12 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth.models import User
 from .managers import CustomUserManager
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from cities_light.models import City, Region
 from versatileimagefield.fields import VersatileImageField, PPOIField
+from django.core.validators import RegexValidator
 
 
 class CustomUser(AbstractUser):
@@ -17,6 +15,10 @@ class CustomUser(AbstractUser):
 
     username = None
     email = models.EmailField(_('email address'), unique=True)
+    phone_regex = RegexValidator(regex=r'(9)[0-9]{9}$',
+                                 message="Phone number must be entered in the format: '9*********'")
+    phone_number = models.CharField(validators=[phone_regex], max_length=10, blank=True, unique=True)
+    phone_number_verified = models.BooleanField(default=False)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
@@ -30,7 +32,7 @@ class CustomUser(AbstractUser):
     image_ppoi = PPOIField()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name']
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'phone_number']
 
     objects = CustomUserManager()
 
@@ -55,13 +57,8 @@ class Address(models.Model):
 class Seller(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
 
-
-    # def get_stores(self):
-    #     return self.store__set
-    #
     def __str__(self):
         return str(self.user)
-
 
 # @receiver(post_save, sender=CustomUser)
 # def update_seller_user_signal(sender, instance, created, **kwargs):

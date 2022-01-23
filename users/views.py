@@ -1,7 +1,7 @@
 from django.views.generic import ListView, TemplateView
 from django.contrib.auth import authenticate, login, logout
 # from .forms import LoginForm, SignUpForm, UpdateProfilePhotoForm, SetNewPasswordForm, ForgetPasswordForm
-from .forms import LoginForm, CustomUserCreationForm
+from .forms import LoginForm, CustomUserCreationForm, VerifyPhoneNumberForm
 from .models import CustomUser, Seller
 import random
 import string
@@ -45,12 +45,12 @@ class Login(View):
 
     def post(self, request, *args, **kwargs):
         form = self.form(request.POST)
-        email = request.POST.get('email')
+        username = request.POST.get('username')
         password = request.POST.get('password')
         if form.is_valid():
-            user = authenticate(request, email=email, password=password)
+            user = authenticate(request, username=username, password=password)
             if not Seller.objects.filter(user=user).exists():
-                messages.error(request, 'Email or password is incorrect!')
+                messages.error(request, 'Email/Phone number or password is incorrect!')
                 return redirect(reverse('login'))
             if user is not None:
                 login(request, user)
@@ -68,6 +68,21 @@ class Logout(View):
     def get(self, request):
         logout(request)
         return redirect(reverse('shop-home'))
+
+
+class VerifyPhoneNumber(View):
+    template_name = 'verify-phone-number.html'
+    form = VerifyPhoneNumberForm
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, {'form': self.form})
+
+    def post(self, request, *args, **kwargs):
+        form = self.form(request.POST)
+        if form.is_valid():
+            code = form.cleaned_data.get('code')
+
+        return render(request, self.template_name, {'form': self.form})
 
 
 # class ChangeProfilePhoto(LoginRequiredMixin, View):

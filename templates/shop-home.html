@@ -1,0 +1,15 @@
+{% extends "shop-base.html" %}
+{% block title %}Home{% endblock %}
+
+
+{% block content %}
+{% load static %}
+
+{% if user.is_authenticated %}
+{% if not user.phone_number_verified %}
+<p>You haven't verified your number yet</p>
+<a href="{% url 'verify_number' %}">Verify tou number</a>
+{% endif %}
+{% endif %}
+
+{% endblock content %}

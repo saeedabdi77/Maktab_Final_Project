@@ -12,4 +12,5 @@ urlpatterns = [
     path('login/', Login.as_view(), name='login'),
     path('logout/', Logout.as_view(), name='logout'),
     path('signup/', SignUp.as_view(), name='signup'),
+    path('verify_number/', VerifyPhoneNumber.as_view(), name='verify_number'),
 ]

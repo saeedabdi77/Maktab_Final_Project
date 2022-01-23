@@ -11,7 +11,12 @@ class EmailBackend(ModelBackend):
                 i = username
             else:
                 i = None
-            user = CustomUser.objects.get(email__iexact=i)
+            if CustomUser.objects.filter(email__iexact=i).exists():
+                user = CustomUser.objects.get(email__iexact=i)
+            elif CustomUser.objects.filter(phone_number__iexact=i).exists():
+                user = CustomUser.objects.get(phone_number__iexact=i)
+            else:
+                raise Exception
         except Exception:
             return None
 

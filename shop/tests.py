@@ -115,6 +115,5 @@ class TestShop(APITestCase):
         url_2 = reverse('cart')
         self.client.post(url_2)
 
-        url = reverse('payment')
         resp = self.client.post(url_1, data)
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)

@@ -6,17 +6,18 @@ from django.core.exceptions import ValidationError
 
 
 class LoginForm(forms.Form):
+    username = forms.CharField()
 
     class Meta:
         model = CustomUser
-        fields = ('email', 'password')
+        fields = ('username', 'password')
 
 
 class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ('first_name', 'last_name', 'email', 'gender', 'password1', 'password2', 'image')
+        fields = ('first_name', 'last_name', 'email', 'phone_number', 'gender', 'password1', 'password2', 'image')
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -32,8 +33,10 @@ class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = CustomUser
         fields = ('email',)
-#
-#
+
+
+class VerifyPhoneNumberForm(forms.Form):
+    code = forms.IntegerField()
 # GENDER_CHOICES = (
 #         ('M', 'Male'),
 #         ('F', 'Female'),

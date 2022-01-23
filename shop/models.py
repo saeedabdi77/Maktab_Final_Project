@@ -190,12 +190,16 @@ class CartItem(models.Model):
     quantity = models.IntegerField(default=1)
 
     def save(self, *args, **kwargs):
+        if CartItem.objects.filter(id=self.pk).exists():
+            amount = self.quantity - CartItem.objects.get(id=self.pk).quantity
+        else:
+            amount = self.quantity
         if (self.cart.cartitem_set.exists()) and (
                 CartItem.objects.filter(cart__pk=self.cart.pk)[0].product.store != self.product.store):
             raise TypeError
-        if self.quantity > Product.objects.get(id=self.product.id).quantity:
+        if amount > Product.objects.get(id=self.product.id).quantity:
             raise ValueError
-        Product.objects.filter(id=self.product.id).update(quantity=F('quantity') - self.quantity)
+        Product.objects.filter(id=self.product.id).update(quantity=F('quantity') - amount)
         super(CartItem, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):

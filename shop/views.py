@@ -15,7 +15,7 @@ from django.db.models import Sum, F, Count
 
 
 class Home(TemplateView):
-    template_name = 'shop-base.html'
+    template_name = 'shop-home.html'
 
 
 class MyStores(LoginRequiredMixin, View):
