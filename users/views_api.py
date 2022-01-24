@@ -1,12 +1,18 @@
-from .serializers import MyTokenObtainPairSerializer
+from .serializers import MyTokenObtainPairSerializer, OtpRequestSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import CustomUser
-from .serializers import RegisterSerializer, AccountSerializer, UpdateAccountSerializer
+from .serializers import RegisterSerializer, AccountSerializer, UpdateAccountSerializer, AccountVerificationSerializer
 from rest_framework import generics, mixins
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+import redis
+import random
+from drf_yasg.utils import swagger_auto_schema
+from datetime import timedelta
+from kavenegar import *
+from rest_framework import status
 
 
 class MyObtainTokenPairView(TokenObtainPairView):
@@ -54,3 +60,87 @@ class Profile(mixins.RetrieveModelMixin, generics.GenericAPIView, mixins.UpdateM
         instance = self.request.user
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+
+def send_otp(phone):
+    otp = random.randint(1000, 9999)
+    print('otp:', otp)
+
+    user = CustomUser.objects.get(phone_number=phone)
+    if user.phone_number_verified:
+        message = f'Use {otp} to verify your Online Store account.'
+    else:
+        message = f'Use {otp} to verify your number on Online Store'
+    try:
+        api = KavenegarAPI(
+            '5947445A44507850306C71474B7158554153357A66626A324B56584753726955485A3662443275354278553D')
+        params = {
+            'sender': '10008663',
+            'receptor': f'0{phone}',
+            'message': message
+        }
+        api.sms_send(params)
+    except APIException as e:
+        print(e)
+        # return Response({'phone': phone}, status=status.HTTP_404_NOT_FOUND)
+    except HTTPException as e:
+        print(e)
+        # return Response({'phone': phone}, status=status.HTTP_404_NOT_FOUND)
+    r = redis.Redis()
+    r.set(f'otp:{phone}', otp, ex=timedelta(minutes=5))
+    return Response({'phone': phone}, status=status.HTTP_200_OK)
+
+
+class OtpView(generics.GenericAPIView):
+
+    @swagger_auto_schema(request_body=OtpRequestSerializer)
+    def post(self, request, *args, **kwargs):
+        serializer = OtpRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        phone = serializer.validated_data['phone']
+        try:
+            user = CustomUser.objects.get(phone_number=phone)
+        except:
+            return Response({'message': f'{phone} not found!'}, status=status.HTTP_404_NOT_FOUND)
+        if not user.phone_number_verified:
+            return Response({'message': 'Account not verified!'}, status=status.HTTP_401_UNAUTHORIZED)
+        return send_otp(phone)
+
+
+class SendAccountVerificationCodeView(generics.GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        phone = request.user.phone_number
+        try:
+            user = CustomUser.objects.get(phone_number=phone)
+        except:
+            return Response({'message': f'{phone} not found!'}, status=status.HTTP_404_NOT_FOUND)
+        if user.phone_number_verified:
+            return Response({'message': 'Account already verified!'}, status=status.HTTP_200_OK)
+        return send_otp(phone)
+
+
+class EnterAccountVerificationCodeView(generics.GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    @swagger_auto_schema(request_body=AccountVerificationSerializer)
+    def post(self, request, *args, **kwargs):
+        serializer = AccountVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        code = serializer.validated_data['code']
+        phone = request.user.phone_number
+
+        try:
+            r = redis.Redis(encoding="utf-8", decode_responses=True)
+            otp = r.get(f'otp:{phone}')
+        except:
+            return Response({'message': 'One time password expired or not send please try again!'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        if code == otp:
+            request.user.phone_number_verified = True
+            request.user.save()
+            return Response({'message': 'Account verified!'}, status=status.HTTP_200_OK)
+        else:
+            Response({'message': 'Wrong password!'}, status=status.HTTP_400_BAD_REQUEST)

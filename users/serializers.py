@@ -10,9 +10,9 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     @classmethod
     def get_token(cls, user):
+        # try except
         token = super(MyTokenObtainPairSerializer, cls).get_token(user)
 
-        token['username'] = user.username
         return token
 
 
@@ -34,8 +34,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('email', 'password', 'password2', 'first_name', 'last_name', 'gender', 'image')
+        fields = ('email', 'phone_number', 'password', 'password2', 'first_name', 'last_name', 'gender', 'image')
         extra_kwargs = {
+            'phone_number': {'required': True},
             'first_name': {'required': True},
             'last_name': {'required': True},
             'gender': {'required': True},
@@ -51,6 +52,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         try:
             user = CustomUser.objects.create(
                 email=validated_data['email'],
+                phone_number=validated_data['phone_number'],
                 first_name=validated_data['first_name'],
                 last_name=validated_data['last_name'],
                 gender=validated_data['gender'],
@@ -59,6 +61,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         except KeyError:
             user = CustomUser.objects.create(
                 email=validated_data['email'],
+                phone_number=validated_data['phone_number'],
                 first_name=validated_data['first_name'],
                 last_name=validated_data['last_name'],
                 gender=validated_data['gender'],
@@ -88,3 +91,11 @@ class UpdateAccountSerializer(serializers.ModelSerializer):
             'gender': {'required': False},
             'image': {'required': False},
         }
+
+
+class OtpRequestSerializer(serializers.Serializer):
+    phone = serializers.CharField(max_length=10)
+
+
+class AccountVerificationSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=4)

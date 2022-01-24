@@ -4,9 +4,14 @@
 
 {% block content %}
 {% load static %}
-
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
 {% if user.is_authenticated %}
 {% if not user.phone_number_verified %}
+
 <p>You haven't verified your number yet</p>
 <a href="{% url 'verify_number' %}">Verify tou number</a>
 {% endif %}

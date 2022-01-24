@@ -14,6 +14,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
+import redis
+from datetime import timedelta
 
 
 class SignUp(CreateView):
@@ -59,7 +61,7 @@ class Login(View):
                     return redirect(request.GET.get('next'))
                 else:
                     return redirect(reverse('shop-home'))
-        messages.error(request, 'Email or password is incorrect!')
+        messages.error(request, 'Email/Phone number or password is incorrect!')
         return redirect(reverse('login'))
 
 
@@ -70,18 +72,33 @@ class Logout(View):
         return redirect(reverse('shop-home'))
 
 
-class VerifyPhoneNumber(View):
+class VerifyPhoneNumber(View, LoginRequiredMixin):
     template_name = 'verify-phone-number.html'
     form = VerifyPhoneNumberForm
+    login_url = '/accounts/login/'
 
     def get(self, request, *args, **kwargs):
+        phone = request.user.phone_number
+        otp = random.randint(1000, 9999)
+        print(otp)
+        r = redis.Redis()
+        r.set(f'verify:{phone}', otp, ex=timedelta(minutes=5))
         return render(request, self.template_name, {'form': self.form})
 
     def post(self, request, *args, **kwargs):
+        phone = request.user.phone_number
         form = self.form(request.POST)
         if form.is_valid():
+            r = redis.Redis(encoding="utf-8", decode_responses=True)
+            otp = r.get(f'verify:{phone}')
             code = form.cleaned_data.get('code')
-
+            if str(code) == otp:
+                request.user.phone_number_verified = True
+                request.user.save()
+                r.delete(f'verify:{phone}')
+                messages.success(request, 'Account verified!')
+                return redirect(reverse('shop-home'))
+        messages.error(request, 'Wrong code!')
         return render(request, self.template_name, {'form': self.form})
 
 
