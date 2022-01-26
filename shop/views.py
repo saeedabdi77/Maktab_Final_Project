@@ -12,6 +12,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from datetime import datetime
 from django.db.models import Sum, F, Count
+from .permissions import IsStoreOwner, IsProductOwner
 
 
 class Home(TemplateView):
@@ -54,7 +55,7 @@ class AddStore(LoginRequiredMixin, View):
         return render(request, 'add-store.html', {'form': self.form})
 
 
-class StoreDetail(LoginRequiredMixin, View):
+class StoreDetail(LoginRequiredMixin, IsStoreOwner, View):
     login_url = '/accounts/login/'
     template_name = 'store-detail.html'
 
@@ -67,7 +68,7 @@ class StoreDetail(LoginRequiredMixin, View):
         return render(request, self.template_name, {'store': store, 'products': products})
 
 
-class DeleteStore(LoginRequiredMixin, View):
+class DeleteStore(LoginRequiredMixin, IsStoreOwner, View):
     login_url = '/accounts/login/'
     template_name = 'delete-store.html'
 
@@ -85,7 +86,7 @@ class DeleteStore(LoginRequiredMixin, View):
         return redirect(reverse('shop-my-stores'))
 
 
-class EditStore(LoginRequiredMixin, View):
+class EditStore(LoginRequiredMixin, IsStoreOwner, View):
     login_url = '/accounts/login/'
     template_name = 'edit-store.html'
     form = AddStoreForm
@@ -129,7 +130,7 @@ class EditStore(LoginRequiredMixin, View):
         return render(request, self.template_name, {'store': queryset, 'form': self.form})
 
 
-class AddProduct(LoginRequiredMixin, View):
+class AddProduct(LoginRequiredMixin, IsStoreOwner, View):
     login_url = '/accounts/login/'
     template_name = 'add-product.html'
     form = AddProductForm
@@ -192,7 +193,7 @@ class AddProductFields(LoginRequiredMixin, View):
         return redirect(reverse('store-detail', args=[Product.objects.get(id=pk).store.id]))
 
 
-class EditProduct(LoginRequiredMixin, UpdateView):
+class EditProduct(LoginRequiredMixin, IsProductOwner, UpdateView):
     login_url = '/accounts/login/'
     template_name = 'edit-product.html'
     model = Product
@@ -207,7 +208,7 @@ class EditProduct(LoginRequiredMixin, UpdateView):
         return reverse('store-detail', args=[self.object.store.id])
 
 
-class GetProductFields(LoginRequiredMixin, ListView):
+class GetProductFields(LoginRequiredMixin, IsProductOwner, ListView):
     login_url = '/accounts/login/'
     template_name = 'product-detail.html'
     model = ProductDetail
@@ -218,7 +219,7 @@ class GetProductFields(LoginRequiredMixin, ListView):
         return ProductDetail.objects.filter(product__slug=product_slug)
 
 
-class StoreOrder(LoginRequiredMixin, View):
+class StoreOrder(LoginRequiredMixin, IsStoreOwner, View):
     login_url = '/accounts/login/'
     template_name = 'store-orders.html'
     form = DateForm
@@ -261,7 +262,7 @@ class StoreOrder(LoginRequiredMixin, View):
         return render(request, self.template_name, {'form': self.form, 'orders': orders})
 
 
-class StoreCustomers(LoginRequiredMixin, ListView):
+class StoreCustomers(LoginRequiredMixin, IsStoreOwner, ListView):
     login_url = '/accounts/login/'
     template_name = 'store-customers.html'
     model = Order
@@ -289,7 +290,7 @@ class StoreCustomers(LoginRequiredMixin, ListView):
         return context
 
 
-class StoreReport(LoginRequiredMixin, ListView):
+class StoreReport(LoginRequiredMixin, IsStoreOwner, ListView):
     login_url = '/accounts/login/'
     template_name = 'store-report.html'
     model = Order
