@@ -1,6 +1,7 @@
-from django.contrib.auth.mixins import AccessMixin, UserPassesTestMixin
 from django.http import HttpResponseForbidden
 from .models import Store, Product
+from users.models import Seller
+from django.shortcuts import reverse, redirect
 
 
 class IsStoreOwner(object):
@@ -18,4 +19,11 @@ class IsProductOwner(object):
             product = Product.objects.get(slug=kwargs['slug'])
         if request.user.seller != product.store.owner:
             return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
+
+class IsSeller(object):
+    def dispatch(self, request, *args, **kwargs):
+        if not Seller.objects.filter(user=request.user).exists():
+            return redirect(reverse('home'))
         return super().dispatch(request, *args, **kwargs)

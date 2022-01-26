@@ -37,15 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'blog',
+    'blog',
     'shop',
     'users',
     'django_extensions',
-    # 'django.contrib.sites',
     'cities_light',
-    # 'allauth',
-    # 'allauth.account',
-    # 'allauth.socialaccount',
     'rest_framework',
     'rest_framework_simplejwt',
     'django_filters',
@@ -163,24 +159,6 @@ CITIES_LIGHT_INCLUDE_COUNTRIES = ['IR']
 
 AUTH_USER_MODEL = 'users.CustomUser'
 AUTHENTICATION_BACKENDS = ['users.backends.PasswordBackend', 'users.backends.OtpBackend']
-
-# AUTHENTICATION_BACKENDS = (
-#     # Needed to login by username in Django admin, regardless of `allauth`
-#     "django.contrib.auth.backends.ModelBackend",
-#
-#     # `allauth` specific authentication methods, such as login by e-mail
-#     "allauth.account.auth_backends.AuthenticationBackend",
-# )
-
-# SITE_ID = 1
-#
-# ACCOUNT_EMAIL_REQUIRED = True
-# ACCOUNT_USERNAME_REQUIRED = False
-# ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
-# ACCOUNT_SESSION_REMEMBER = True
-# ACCOUNT_AUTHENTICATION_METHOD = 'email'
-# ACCOUNT_UNIQUE_EMAIL = True
-
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),

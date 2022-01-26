@@ -6,10 +6,10 @@
 {% load static %}
 <div class="row justify-content-center"><h1>{{user_profile.full_name}}</h1></div>
 <div class="row justify-content-center">
-    {% if user_profile.seller.image %}
-    <img src="{{user_profile.seller.image.url}}" class="rounded-circle"
+    {% if user_profile.image %}
+    <img src="{{user_profile.image.url}}" class="rounded-circle"
          height="300" alt="" loading="lazy">
-    {% elif user_profile.seller.gender == 'M' %}
+    {% elif user_profile.gender == 'M' %}
     <img src="{% static 'male-avatar.jpg' %}" class="rounded-circle"
          height="300" alt="" loading="lazy">
     {% else %}

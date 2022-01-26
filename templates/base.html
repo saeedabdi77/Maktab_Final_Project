@@ -89,10 +89,10 @@
                             {% if user.is_authenticated %}
                             <a class="d-flex align-items-center " href="/blog/profile/{{user.full_name}}/"
                                role="button">
-                                {% if user.seller.image %}
-                                <img src="{{user.seller.image.url}}" class="rounded-circle"
+                                {% if user.image %}
+                                <img src="{{user.image.url}}" class="rounded-circle"
                                      height="25" alt="" loading="lazy">
-                                {% elif user.seller.gender == 'M' %}
+                                {% elif user.gender == 'M' %}
                                 <img src="{% static 'male-avatar.jpg' %}" class="rounded-circle"
                                      height="25" alt="" loading="lazy">
                                 {% else %}
