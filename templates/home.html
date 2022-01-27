@@ -10,7 +10,7 @@
 <div class="card my-5 p-5" style="width: 100%; border-color: blue">
     <div class="card-block">
         <h1 class="card-title">{{post.title}}</h1>
-        <a href="/blog/profile/{{post.publisher.user.full_name}}/" class="card-subtitle text-muted">{{post.publisher.user.username}}</a>
+        <a href="/accounts/profile/{{post.publisher.email}}/" class="card-subtitle text-muted">{{post.publisher.full_name}}</a>
     </div>
     <img data-src="holder.js/100px180/?text=Image" alt="Image [100%x180]"
          src="{{post.image.url}}"

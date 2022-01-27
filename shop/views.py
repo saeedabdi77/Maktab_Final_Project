@@ -32,10 +32,10 @@ class AddStore(LoginRequiredMixin, IsSeller, View):
     login_url = '/accounts/login/'
     form = AddStoreForm
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         return render(request, 'add-store.html', {'form': self.form})
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         form = self.form(request.POST, request.FILES)
         if form.is_valid():
             if Store.objects.filter(owner=request.user.seller).filter(status='processing').exists():
@@ -163,13 +163,14 @@ class SetDefaultImage(LoginRequiredMixin, IsSeller, View):
         return render(request, self.template_name, {'images': images})
 
     def post(self, request, pk):
-        instance = ProductImage.objects.filter(product=Product.objects.get(id=pk))[int(request.POST.get('default')) - 1]
+        product = Product.objects.get(id=pk)
+        instance = ProductImage.objects.filter(product=product)[int(request.POST.get('default')) - 1]
         instance.default = True
         instance.save()
         if Product.objects.get(id=pk).type:
             return redirect(reverse('set-product-fields', args=[pk]))
         else:
-            return redirect(reverse('store-detail', args=[Product.objects.get(id=pk).store.id]))
+            return redirect(reverse('store-detail', args=[product.store.id]))
 
 
 class AddProductFields(LoginRequiredMixin, IsSeller, View):
@@ -187,9 +188,9 @@ class AddProductFields(LoginRequiredMixin, IsSeller, View):
         for key, value in request.POST.items():
             if key == 'csrfmiddlewaretoken':
                 continue
-                # product =
-            ProductDetail.objects.create(product=Product.objects.get(id=pk), key=ProductField.objects.get(name=key),
-                                         value=value)
+            product = Product.objects.get(id=pk)
+            key = ProductField.objects.get(name=key)
+            ProductDetail.objects.create(product=product, key=key, value=value)
         return redirect(reverse('store-detail', args=[Product.objects.get(id=pk).store.id]))
 
 

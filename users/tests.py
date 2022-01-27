@@ -2,7 +2,7 @@ from .models import CustomUser
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.urls import reverse
-import redis
+from django.core.cache import cache
 
 
 class UserApiTest(APITestCase):
@@ -62,8 +62,7 @@ class UserApiTest(APITestCase):
         resp_3 = self.client.post(url_3)
         self.assertEqual(resp_3.status_code, status.HTTP_200_OK)
 
-        r = redis.Redis(encoding="utf-8", decode_responses=True)
-        otp = r.get(f'otp:9887776646')
+        otp = cache.get(f'otp:9887776646')
 
         url_4 = reverse('enter_verification_code')
         self.client.post(url_4, data={'code': otp})
@@ -89,8 +88,7 @@ class UserApiTest(APITestCase):
         resp = self.client.post(url_2, data={'phone': '9887776645'})
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
-        r = redis.Redis(encoding="utf-8", decode_responses=True)
-        otp = r.get(f'otp:9887776645')
+        otp = cache.get(f'otp:9887776645')
 
         url_3 = reverse('token_obtain_pair')
         resp_2 = self.client.post(url_3, data={'email': '9887776645', 'password': otp})

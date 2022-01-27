@@ -33,17 +33,15 @@
                 <p>Pages</p>
             </li>
             <li class="active">
+                <a href="{% url 'shop-home' %}">Home</a>
+            </li>
+            <li class="active">
                 <a href="{% url 'shop-my-stores' %}">My Stores</a>
             </li>
             <li class="active">
                 <a href="{% url 'add-store' %}">Add a new store</a>
             </li>
-            <li class="active">
-                <a href="{}">Change account settings</a>
-            </li>
-            <li class="active">
-                <a href="{}">Help and support</a>
-            </li>
+
             {% endif %}
 
         </ul>
@@ -96,7 +94,7 @@
 
                     <ul class="nav navbar-nav navbar-right">
                         <li>
-                            <a href="{% url 'my-posts' %}">Blog</a>
+                            <a href="{% url 'home' %}">Blog</a>
 
                         </li>
 

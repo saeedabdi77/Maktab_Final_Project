@@ -59,24 +59,3 @@ class Seller(models.Model):
 
     def __str__(self):
         return str(self.user)
-
-# @receiver(post_save, sender=CustomUser)
-# def update_seller_user_signal(sender, instance, created, **kwargs):
-#     if created:
-#         Seller.objects.create(user=instance)
-#     instance.seller.save()
-
-
-# class ExtendUser(models.Model):
-#     user = models.OneToOneField(Seller, on_delete=models.CASCADE)
-#
-#
-#     def __str__(self):
-#         return self.user.user.email
-#
-#
-# @receiver(post_save, sender=User)
-# def update_extend_user_signal(sender, instance, created, **kwargs):
-#     if created:
-#         ExtendUser.objects.create(user=instance)
-#     instance.extenduser.save()

@@ -1,6 +1,6 @@
 from django.contrib.auth.backends import ModelBackend
 from users.models import CustomUser
-import redis
+from django.core.cache import cache
 
 
 class PasswordBackend(ModelBackend):
@@ -34,8 +34,7 @@ class OtpBackend(ModelBackend):
         except Exception:
             return None
         else:
-            r = redis.Redis(encoding="utf-8", decode_responses=True)
-            otp = r.get(f'otp:{phone}')
-            if otp and password == otp and self.user_can_authenticate(user):
-                r.delete(f'otp:{phone}')
+            otp = cache.get(f'otp:{phone}')
+            if otp and password == str(otp) and self.user_can_authenticate(user):
+                cache.delete(f'otp:{phone}')
                 return user

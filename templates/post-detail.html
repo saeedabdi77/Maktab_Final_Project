@@ -2,14 +2,14 @@
 {% block title %}{{post.title}}{% endblock %}
 {% block content %}
 {% load static %}
-<!--you can see post title, time created, publisher username, caption and comments-->
+<!--you can see post title, time created, publisher full name, caption and comments-->
 <!--replying comments mention user by @ sign-->
 
 
 <div class="card my-5 p-5" style="width: 100%; border-color: blue">
     <div class="card-block">
         <h1 class="card-title">{{post.title}}</h1>
-        <div class="text-muted fst-italic mb-2">Posted on {{post.created_at}} by {{post.publisher.user.username}}</div>
+        <div class="text-muted fst-italic mb-2">Posted on {{post.created_at}} by {{post.publisher.full_name}}</div>
     </div>
     <img data-src="holder.js/100px180/?text=Image" alt="Image [100%x180]"
          src="{{post.image.url}}"
@@ -61,10 +61,10 @@
         <div class="d-flex">
             <div class="flex-shrink-0"></div>
             <div class="ms-3">
-                <div class="fw-bold">{{comment.publisher.user.username}} :</div>
+                <div class="fw-bold">{{comment.publisher.full_name}} :</div>
                 <p>
                     {% if comment.parent %}
-                    <a href="/blog/profile/{{comment.parent.publisher.user.username}}/" style="color: #0056b3">@{{comment.parent.publisher.user.username}}</a>
+                    <a href="/accounts/profile/{{comment.parent.publisher.email}}/" style="color: #0056b3">@{{comment.parent.publisher.full_name}}</a>
                     {% endif %}
                     {{comment.text}}</p>
             </div>
@@ -76,7 +76,7 @@
         {{ form.non_field_errors }}
         <input type="hidden" name="parent_id" value="{{ comment.id }}">
         <div class="form-group">
-            <label for="id_text">Reply {{comment.publisher.user.username}}</label>
+            <label for="id_text">Reply {{comment.publisher.full_name}}</label>
             <input type="text" class="form-control" placeholder="" id="id_text" name="text"
                    required>
             <strong style="color: red">{{ form.username.errors }}</strong>

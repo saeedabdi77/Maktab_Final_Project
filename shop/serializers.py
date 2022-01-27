@@ -2,7 +2,6 @@ from rest_framework import serializers
 from .models import StoreType, Store, Product, ProductType, Cart, CartItem, Order
 from users.models import Address, CustomUser
 from cities_light.models import Region, City
-from django.core.exceptions import ObjectDoesNotExist
 
 
 class StoreTypeSerializer(serializers.ModelSerializer):

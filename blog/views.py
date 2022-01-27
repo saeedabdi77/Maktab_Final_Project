@@ -36,7 +36,7 @@ def category_detail(request, title):
     return render(request, 'category-detail.html', {'category': category, 'posts': posts})
 
 
-@login_required(login_url='/blog/login')
+@login_required(login_url='/accounts/login')
 def edit_category(request, title):
     category = get_object_or_404(Category, title=title)
     form = EditCategoryForm(instance=category)
@@ -51,7 +51,7 @@ def edit_category(request, title):
     return render(request, 'edit-category.html', {'form': form, 'category': category})
 
 
-@login_required(login_url='/blog/login')
+@login_required(login_url='/accounts/login')
 def delete_category(request, title):
     category = get_object_or_404(Category, title=title)
 
@@ -65,7 +65,7 @@ def delete_category(request, title):
 
 
 class AddCategory(LoginRequiredMixin, View):
-    login_url = '/blog/login/'
+    login_url = '/accounts/login/'
     form = EditCategoryForm
 
     def get(self, request):
@@ -95,7 +95,7 @@ def tag_detail(request, name):
     return render(request, 'tag-detail.html', {'tag': tag, 'posts': posts})
 
 
-@login_required(login_url='/blog/login')
+@login_required(login_url='/accounts/login')
 def edit_tag(request, name):
     tag = get_object_or_404(Tag, name=name)
     form = EditTagForm(instance=tag)
@@ -110,7 +110,7 @@ def edit_tag(request, name):
     return render(request, 'edit-tag.html', {'form': form, 'tag': tag})
 
 
-@login_required(login_url='/blog/login')
+@login_required(login_url='/accounts/login')
 def delete_tag(request, name):
     tag = get_object_or_404(Tag, name=name)
 
@@ -124,7 +124,7 @@ def delete_tag(request, name):
 
 
 class AddTag(LoginRequiredMixin, View):
-    login_url = '/blog/login/'
+    login_url = '/accounts/login/'
     form = EditTagForm
 
     def get(self, request):
@@ -143,7 +143,7 @@ class AddTag(LoginRequiredMixin, View):
 
 
 class CreatePost(LoginRequiredMixin, View):
-    login_url = '/blog/login/'
+    login_url = '/accounts/login/'
     form = CreatePostForm
 
     def get(self, request):
@@ -160,7 +160,7 @@ class CreatePost(LoginRequiredMixin, View):
 
 
 class MyPosts(LoginRequiredMixin, View):
-    login_url = '/blog/login/'
+    login_url = '/accounts/login/'
     template_name = 'my-posts.html'
 
     def get(self, request):
@@ -168,7 +168,7 @@ class MyPosts(LoginRequiredMixin, View):
         return render(request, self.template_name, {'posts': queryset})
 
 
-@login_required(login_url='/blog/login')
+@login_required(login_url='/accounts/login')
 def edit_draft_post(request, slug):
     post = get_object_or_404(Post, slug=slug)
     form = CreatePostForm(instance=post)
@@ -182,7 +182,7 @@ def edit_draft_post(request, slug):
     return render(request, 'create-post.html', {'form': form, 'post': post})
 
 
-@login_required(login_url='/blog/login')
+@login_required(login_url='/accounts/login')
 def edit_published_post(request, slug):
     post = get_object_or_404(Post, slug=slug)
     form = UpdatePublishedPostForm(instance=post)
@@ -196,7 +196,7 @@ def edit_published_post(request, slug):
     return render(request, 'create-post.html', {'form': form, 'post': post})
 
 
-@login_required(login_url='/blog/login')
+@login_required(login_url='/accounts/login')
 def delete_post(request, slug):
     post = get_object_or_404(Post, slug=slug)
 
@@ -243,7 +243,7 @@ class PostDetail(View):
                           {'post': post, 'comments': comments, 'form': self.form, 'likes': len(likes),
                            'dislikes': len(dislikes)})
 
-    @method_decorator(login_required(login_url='/blog/login'))
+    @method_decorator(login_required(login_url='/accounts/login'))
     def post(self, request, slug):
         form = self.form(request.POST)
         if form.is_valid():

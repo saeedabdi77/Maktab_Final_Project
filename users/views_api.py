@@ -7,12 +7,11 @@ from rest_framework import generics, mixins
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-import redis
 import random
 from drf_yasg.utils import swagger_auto_schema
-from datetime import timedelta
 from kavenegar import *
 from rest_framework import status
+from django.core.cache import cache
 
 
 class MyObtainTokenPairView(TokenObtainPairView):
@@ -86,15 +85,14 @@ def send_otp(phone):
     except HTTPException as e:
         print(e)
         # return Response({'phone': phone}, status=status.HTTP_404_NOT_FOUND)
-    r = redis.Redis()
-    r.set(f'otp:{phone}', otp, ex=timedelta(minutes=5))
+    cache.set(f'otp:{phone}', otp, timeout=300)
     return Response({'phone': phone}, status=status.HTTP_200_OK)
 
 
 class OtpView(generics.GenericAPIView):
 
     @swagger_auto_schema(request_body=OtpRequestSerializer)
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         serializer = OtpRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         phone = serializer.validated_data['phone']
@@ -110,14 +108,14 @@ class OtpView(generics.GenericAPIView):
 class SendAccountVerificationCodeView(generics.GenericAPIView):
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         phone = request.user.phone_number
         try:
             user = CustomUser.objects.get(phone_number=phone)
         except:
             return Response({'message': f'{phone} not found!'}, status=status.HTTP_404_NOT_FOUND)
         if user.phone_number_verified:
-            return Response({'message': 'Account already verified!'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Account already verified!'}, status=status.HTTP_201_CREATED)
         return send_otp(phone)
 
 
@@ -125,22 +123,23 @@ class EnterAccountVerificationCodeView(generics.GenericAPIView):
     permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(request_body=AccountVerificationSerializer)
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         serializer = AccountVerificationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         code = serializer.validated_data['code']
         phone = request.user.phone_number
 
         try:
-            r = redis.Redis(encoding="utf-8", decode_responses=True)
-            otp = r.get(f'otp:{phone}')
+            otp = cache.get(f'otp:{phone}')
+            if otp is None:
+                raise Exception
         except:
-            return Response({'message': 'One time password expired or not send please try again!'},
+            return Response({'message': 'One time password has expired or not sent please try again!'},
                             status=status.HTTP_404_NOT_FOUND)
-
-        if code == otp:
+        if code == str(otp):
             request.user.phone_number_verified = True
             request.user.save()
+            cache.delete(f'otp:{phone}')
             return Response({'message': 'Account verified!'}, status=status.HTTP_200_OK)
         else:
-            Response({'message': 'Wrong password!'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Wrong code!'}, status=status.HTTP_401_UNAUTHORIZED)

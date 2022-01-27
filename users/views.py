@@ -13,8 +13,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
-import redis
-from datetime import timedelta
+from django.core.cache import cache
 
 
 class SignUp(CreateView):
@@ -76,26 +75,26 @@ class VerifyPhoneNumber(View, LoginRequiredMixin):
     def get(self, request):
         phone = request.user.phone_number
         otp = random.randint(1000, 9999)
-        print(otp)
-        r = redis.Redis()
-        r.set(f'verify:{phone}', otp, ex=timedelta(minutes=5))
-        return render(request, self.template_name, {'form': self.form})
+        print('otp:', otp)
+        cache.set(f'verify:{phone}', otp, timeout=300)
+        time = cache.ttl(f'verify:{phone}')
+        return render(request, self.template_name, {'form': self.form, 'time': time})
 
     def post(self, request):
         phone = request.user.phone_number
         form = self.form(request.POST)
         if form.is_valid():
-            r = redis.Redis(encoding="utf-8", decode_responses=True)
-            otp = r.get(f'verify:{phone}')
+            otp = cache.get(f'verify:{phone}')
             code = form.cleaned_data.get('code')
-            if str(code) == otp:
+            if code == otp:
                 request.user.phone_number_verified = True
                 request.user.save()
-                r.delete(f'verify:{phone}')
+                cache.delete(f'verify:{phone}')
                 messages.success(request, 'Account verified!')
                 return redirect(reverse('shop-home'))
         messages.error(request, 'Wrong code!')
-        return render(request, self.template_name, {'form': self.form})
+        time = cache.ttl(f'verify:{phone}')
+        return render(request, self.template_name, {'form': self.form, 'time': time})
 
 
 class ChangeProfilePhoto(LoginRequiredMixin, View):
@@ -173,5 +172,5 @@ class ShowUserProfile(View):
 
     def get(self, request, email):
         user_profile = CustomUser.objects.get(email=email)
-        posts = user_profile.extenduser.post_set.all().order_by('-created_at')
+        posts = user_profile.post_set.all().order_by('-created_at')
         return render(request, self.template_name, {'user_profile': user_profile, 'posts': posts})
