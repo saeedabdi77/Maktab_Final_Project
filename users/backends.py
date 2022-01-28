@@ -4,18 +4,18 @@ from django.core.cache import cache
 
 
 class PasswordBackend(ModelBackend):
-    def authenticate(self, request, email=None, username=None, password=None, **kwargs):
+    def authenticate(self, request, username=None, password=None, **kwargs):
         try:
-            if email:
-                i = email
-            elif username:
-                i = username
+            if username:
+                username_field = username
+            elif kwargs['phone/email']:
+                username_field = kwargs['phone/email']
             else:
-                i = None
-            if CustomUser.objects.filter(email__iexact=i).exists():
-                user = CustomUser.objects.get(email__iexact=i)
-            elif CustomUser.objects.filter(phone_number__iexact=i).exists():
-                user = CustomUser.objects.get(phone_number__iexact=i)
+                username_field = None
+            if CustomUser.objects.filter(email__iexact=username_field).exists():
+                user = CustomUser.objects.get(email__iexact=username_field)
+            elif CustomUser.objects.filter(phone_number__iexact=username_field).exists():
+                user = CustomUser.objects.get(phone_number__iexact=username_field)
             else:
                 raise Exception
         except Exception:
@@ -27,13 +27,19 @@ class PasswordBackend(ModelBackend):
 
 
 class OtpBackend(ModelBackend):
-    def authenticate(self, request, email=None, password=None, **kwargs):
-        phone = email
+    def authenticate(self, request, password=None, **kwargs):
+        username_field = kwargs['phone/email']
         try:
-            user = CustomUser.objects.get(phone_number__iexact=phone)
+            if CustomUser.objects.filter(email__iexact=username_field).exists():
+                user = CustomUser.objects.get(email__iexact=username_field)
+            elif CustomUser.objects.filter(phone_number__iexact=username_field).exists():
+                user = CustomUser.objects.get(phone_number__iexact=username_field)
+            else:
+                raise Exception
         except Exception:
             return None
         else:
+            phone = user.phone_number
             otp = cache.get(f'otp:{phone}')
             if otp and password == str(otp) and self.user_can_authenticate(user):
                 cache.delete(f'otp:{phone}')

@@ -7,10 +7,10 @@ from versatileimagefield.serializers import VersatileImageFieldSerializer
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = 'phone/email'
 
     @classmethod
     def get_token(cls, user):
-        # try except
         token = super(MyTokenObtainPairSerializer, cls).get_token(user)
 
         return token
